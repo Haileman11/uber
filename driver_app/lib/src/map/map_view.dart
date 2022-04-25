@@ -1,9 +1,8 @@
 import 'dart:async';
-
-import 'package:common/map/map_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:driver_app/src/map/map_controller.dart';
 
 class MapView extends ConsumerStatefulWidget {
   final LatLng myLocation;
@@ -30,6 +29,8 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
   var polylines = <PolylineId, Polyline>{};
   List<Marker> _markers = [];
   late LatLng myLocation;
+
+  Set<Circle> circles = {};
   @override
   void initState() {
     super.initState();
@@ -78,6 +79,7 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
                 // LatLng(9.02484323873786, 38.78085709626648),
                 zoom: 16.0,
               ),
+              circles: mapController.circles,
               onCameraIdle: widget.onCameraIdle,
               onCameraMove: widget.onCameraMove,
             ),

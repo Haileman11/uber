@@ -7,7 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationService with ChangeNotifier {
   bool? serviceEnabled;
-  LocationService(this.serviceEnabled);
+  late LatLng myLocation;
   Future<LatLng> getMyLocation() async {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
@@ -35,7 +35,8 @@ class LocationService with ChangeNotifier {
     notifyListeners();
     print(position.latitude);
     print(position.longitude);
-    return LatLng(position.latitude, position.longitude);
+    myLocation = LatLng(position.latitude, position.longitude);
+    return myLocation;
   }
 
   void startLocationStream() {
@@ -58,7 +59,6 @@ class LocationService with ChangeNotifier {
   Stream<LatLng> get locationStream => _locationController.stream;
 }
 
-final locationProvider =
-    ChangeNotifierProvider(((ref) => LocationService(false)));
+final locationProvider = ChangeNotifierProvider(((ref) => LocationService()));
 final locationStreamProvider =
     StreamProvider(((ref) => ref.read(locationProvider).locationStream));

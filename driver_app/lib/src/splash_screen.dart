@@ -84,6 +84,6 @@ class SplashScreenState extends ConsumerState<SplashScreen> {
         return const Login();
       });
     }
-    return const Homepage();
+    return const Home();
   }
 }

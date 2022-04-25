@@ -1,21 +1,11 @@
-// PlacePicker(
-//           apiKey: APIKeys.apiKey,   // Put YOUR OWN KEY here.
-//           onPlacePicked: (result) {
-//             print(result.address);
-//             Navigator.of(context).pop();
-//           },
-//           initialPosition: HomePage.kInitialPosition,
-//           useCurrentLocation: true,
-//         ),
 import 'dart:async';
-
-import 'package:common/map/map_service.dart';
-import 'package:common/map/map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:passenger_app/src/map/map_service.dart';
+import 'package:passenger_app/src/map/map_view.dart';
 import 'package:passenger_app/src/services/location_service.dart';
 
 class PlacePicker extends ConsumerStatefulWidget {

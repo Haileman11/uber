@@ -1,10 +1,9 @@
-import 'package:common/map/map_controller.dart';
-import 'package:common/settings/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:passenger_app/src/home/go.dart';
 import 'package:common/ui/keep_alive.dart';
 import 'package:passenger_app/src/home/profile.dart';
+import 'package:passenger_app/src/map/map_controller.dart';
 import 'package:passenger_app/src/places/place_list_view.dart';
 
 class Home extends ConsumerStatefulWidget {

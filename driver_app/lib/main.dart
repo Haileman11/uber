@@ -1,8 +1,7 @@
+import 'package:common/settings/settings_controller.dart';
+import 'package:common/settings/settings_service.dart';
 import 'package:common/shared_preferences_service.dart';
 import 'package:driver_app/src/app.dart';
-import 'package:driver_app/src/services/top_level_providers.dart';
-import 'package:driver_app/src/settings/settings_controller.dart';
-import 'package:driver_app/src/settings/settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
