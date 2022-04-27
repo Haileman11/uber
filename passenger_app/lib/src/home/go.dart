@@ -1,4 +1,4 @@
-import 'package:common/settings/settings_view.dart';
+import 'package:common/ui/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:passenger_app/src/home/place_picker.dart';
 import 'package:passenger_app/src/map/map_controller.dart';
+import 'package:passenger_app/src/map/map_service.dart';
 import 'package:passenger_app/src/map/map_view.dart';
 import 'package:passenger_app/src/services/location_service.dart';
 import 'package:passenger_app/src/services/top_level_providers.dart';
@@ -22,6 +23,8 @@ class GoTab extends ConsumerStatefulWidget {
 class _HomepageState extends ConsumerState<GoTab> {
   String? currentAddress;
 
+  var pageController = PageController();
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +36,7 @@ class _HomepageState extends ConsumerState<GoTab> {
 
   LatLng? myLocation;
 
-  String? _placeDistance;
+  double? _placeDistance;
 
   final _destinationController = TextEditingController();
 
@@ -56,71 +59,51 @@ class _HomepageState extends ConsumerState<GoTab> {
                   padding: const EdgeInsets.all(8.0),
                   constraints: BoxConstraints(
                       maxHeight: MediaQuery.of(context).size.height * 0.4),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const SizedBox(
-                          height: 10.0,
+                  child: mapController.destinations.isEmpty ||
+                          _placeDistance == null
+                      ? loadingIndicator
+                      : PageView(
+                          controller: pageController,
+                          children: [
+                            LocationSetup(
+                                mapController: mapController,
+                                pageController: pageController,
+                                placeDistance: _placeDistance!,
+                                myLocation: myLocation),
+                            CompleteOrder(
+                                mapController: mapController,
+                                pageController: pageController,
+                                placeDistance: _placeDistance!,
+                                myLocation: myLocation),
+                          ],
                         ),
-                        const Card(
-                          child: ListTile(
-                            title: Text("My Location"),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 15.0,
-                        ),
-                        ...mapController.destinations.map(((e) => Card(
-                                child: ListTile(
-                              title: Text(e.item1),
-                            )))),
-                        if (_placeDistance != null)
-                          Text(
-                            "$_placeDistance kilometers",
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: ElevatedButton(
-                              onPressed: (myLocation != null &&
-                                      mapController.destinations.isNotEmpty)
-                                  ? () async {
-                                      // print(await ref
-                                      //     .read(mapProvider)
-                                      //     .calculateDistance(
-                                      //         myLocation!, myDestination!));
-                                    }
-                                  : null,
-                              child: const Text("Next")),
-                        ),
-                        TextButton(
-                            onPressed: () => mapController.clearDestinations(),
-                            child: Text("Cancel")),
-                      ],
-                    ),
-                  ),
                 );
-              }),
+              },
+            ),
+      extendBodyBehindAppBar: true,
       body: SafeArea(
         child: Stack(
           children: <Widget>[
             Builder(builder: (context) {
               if (locationController.serviceEnabled == null) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator.adaptive(),
-                    ],
-                  ),
-                );
+                return loadingIndicator;
               } else if (locationController.serviceEnabled!) {
-                return MapView(
-                  myLocation: locationController.myLocation,
-                  polylines: mapController.polylines,
-                );
+                return CustomScrollView(
+                    physics: NeverScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Container(
+                          constraints: BoxConstraints(
+                              maxHeight: mapController.destinations.isEmpty
+                                  ? MediaQuery.of(context).size.height
+                                  : MediaQuery.of(context).size.height * 0.6),
+                          child: MapView(
+                              myLocation: locationController.myLocation,
+                              polylines: mapController.polylines,
+                              markers: mapController.markers),
+                        ),
+                      ),
+                    ]);
               } else {
                 return Container(
                   alignment: Alignment.center,
@@ -193,20 +176,8 @@ class _HomepageState extends ConsumerState<GoTab> {
                           ),
                           actions: [
                             IconButton(
-                              onPressed: (() async {
-                                LatLng? selectedLocation =
-                                    await Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (_) => PlacePicker()));
-                                if (selectedLocation != null) {
-                                  mapController.addDestination(
-                                    selectedLocation,
-                                  );
-                                  mapController.calculateDistance(
-                                      locationController.myLocation,
-                                      selectedLocation);
-                                }
-                              }),
+                              onPressed: () => placePickerHandler(
+                                  mapController, locationController),
                               icon: const Icon(
                                 Icons.location_on_sharp,
                               ),
@@ -259,4 +230,191 @@ class _HomepageState extends ConsumerState<GoTab> {
   //     MapController mapController, BuildContext context) {
   //   return
   // }
+
+  void placePickerHandler(
+      MapController mapController, LocationService locationController) async {
+    LatLng? selectedLocation = await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => PlacePicker()));
+    if (selectedLocation != null) {
+      mapController.addDestination(
+        selectedLocation,
+      );
+      _placeDistance = await mapController.calculateDistance(
+          locationController.myLocation, selectedLocation);
+      mapController.calculatePolyline(
+          locationController.myLocation, selectedLocation, <LatLng>[]);
+    }
+  }
+}
+
+class LocationSetup extends StatelessWidget {
+  const LocationSetup({
+    Key? key,
+    required this.mapController,
+    required this.pageController,
+    required double placeDistance,
+    required this.myLocation,
+  })  : _placeDistance = placeDistance,
+        super(key: key);
+
+  final MapController mapController;
+  final PageController pageController;
+  final double _placeDistance;
+  final LatLng? myLocation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const SizedBox(
+              height: 10.0,
+            ),
+            const Card(
+              child: ListTile(
+                title: Text("My Location"),
+              ),
+            ),
+            const SizedBox(
+              height: 15.0,
+            ),
+            ...mapController.destinations.map(((e) => Card(
+                    child: ListTile(
+                  title: Text(e.item1),
+                )))),
+            if (_placeDistance != null)
+              Text(
+                "${_placeDistance.toStringAsFixed(3)} kilometers",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: ElevatedButton(
+                  onPressed: (myLocation != null &&
+                          mapController.destinations.isNotEmpty)
+                      ? () async {
+                          // pageController.nextPage(
+                          //     duration: Duration(milliseconds: 10),
+                          //     curve: SawTooth(1));
+                          // mapController.calculatePolyline(
+                          //     myLocation!,
+                          //     mapController.destinations.first.item2,
+                          //     <LatLng>[]);
+                        }
+                      : null,
+                  child: const Text("Next")),
+            ),
+            TextButton(
+                onPressed: () => mapController.clearDestinations(),
+                child: Text("Cancel")),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CompleteOrder extends StatelessWidget {
+  const CompleteOrder({
+    Key? key,
+    required this.mapController,
+    required this.pageController,
+    required double placeDistance,
+    required this.myLocation,
+  })  : _placeDistance = placeDistance,
+        super(key: key);
+
+  final MapController mapController;
+  final PageController pageController;
+  final double _placeDistance;
+  final LatLng? myLocation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const SizedBox(
+              height: 10.0,
+            ),
+            Text("Select a car"),
+            const SizedBox(
+              height: 15.0,
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ChoiceChip(
+                    visualDensity: VisualDensity.comfortable,
+                    label: Column(
+                      children: [
+                        const Text("Regular"),
+                        Text("${(60 + _placeDistance * 10).truncate()} ETB"),
+                      ],
+                    ),
+                    onSelected: (val) {},
+                    selected: false,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ChoiceChip(
+                    label: const Text("Mid-size"),
+                    onSelected: (val) {},
+                    selected: false,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ChoiceChip(
+                    label: const Text("Minibus"),
+                    onSelected: (val) {},
+                    selected: false,
+                  ),
+                ),
+              ],
+            ),
+            if (_placeDistance != null)
+              Text(
+                "${_placeDistance.toStringAsFixed(3)} kilometers",
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: ElevatedButton(
+                  onPressed: (myLocation != null &&
+                          mapController.destinations.isNotEmpty)
+                      ? () async {
+                          // print(await ref
+                          //     .read(mapProvider)
+                          //     .calculateDistance(
+                          //         myLocation!, myDestination!));
+                        }
+                      : null,
+                  child: const Text("Order now")),
+            ),
+            TextButton(
+                onPressed: () => pageController.previousPage(
+                    duration: Duration(milliseconds: 10), curve: SawTooth(1)),
+                child: Text("Back")),
+          ],
+        ),
+      ),
+    );
+  }
 }

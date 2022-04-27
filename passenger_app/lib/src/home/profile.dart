@@ -42,7 +42,8 @@ class _ProfileState extends ConsumerState<Profile> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("Driver man", style: Theme.of(context).textTheme.headline6),
+              Text("Passenger man",
+                  style: Theme.of(context).textTheme.headline6),
             ],
           ),
           Row(

@@ -1,6 +1,7 @@
 import 'package:common/navigator_service.dart';
 import 'package:common/settings/settings_controller.dart';
 import 'package:common/settings/settings_view.dart';
+import 'package:driver_app/src/services/notification_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:driver_app/src/trip/trip_details_view.dart';
 import 'package:driver_app/src/trip/trip_list_view.dart';
@@ -71,7 +72,11 @@ class MyApp extends ConsumerWidget {
                 return const TripDetailsView();
               case TripListView.routeName:
               default:
-                return SplashScreen();
+                return FutureBuilder(
+                    future: NotificationService().init(ref),
+                    builder: (context, snapshot) {
+                      return SplashScreen();
+                    });
             }
           },
         );

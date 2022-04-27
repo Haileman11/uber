@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:passenger_app/src/services/notification_service.dart';
 import 'package:passenger_app/src/splash_screen.dart';
 
 import 'sample_feature/sample_item_details_view.dart';
@@ -71,7 +72,11 @@ class MyApp extends ConsumerWidget {
                 return const SampleItemDetailsView();
               case SampleItemListView.routeName:
               default:
-                return SplashScreen();
+                return FutureBuilder(
+                    future: NotificationService().init(ref),
+                    builder: (context, snapshot) {
+                      return SplashScreen();
+                    });
             }
           },
         );

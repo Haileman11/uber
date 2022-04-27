@@ -16,7 +16,8 @@ class _ProfileState extends ConsumerState<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Profile"),
+        elevation: 0.0,
+        backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -29,9 +30,6 @@ class _ProfileState extends ConsumerState<Profile> {
       body: SingleChildScrollView(
           child: Column(
         children: [
-          SizedBox(
-            height: 16.0,
-          ),
           CircleAvatar(
             radius: 50.0,
             backgroundImage: NetworkImage("https://picsum.photos/200/300"),
@@ -42,8 +40,7 @@ class _ProfileState extends ConsumerState<Profile> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("Passenger man",
-                  style: Theme.of(context).textTheme.headline6),
+              Text("Driver man", style: Theme.of(context).textTheme.headline6),
             ],
           ),
           Row(

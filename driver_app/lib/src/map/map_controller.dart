@@ -39,23 +39,27 @@ class MapController with ChangeNotifier {
   String googleAPiKey = "AIzaSyAZncMtP-Cfxml3YvAtKLL4uOEeGub4Zrc";
   String googleDirectionsAPiKey = "AIzaSyBRErov981d9m8yhEyHOD7FVPQtfuO7OsI";
 
-  Future setMapStyle(GoogleMapController myController) async {
-    switch (ref.watch(settingsProvider).themeMode) {
-      case ThemeMode.system:
-        final theme = WidgetsBinding.instance!.window.platformBrightness;
-        if (theme == Brightness.dark) {
-          myController.setMapStyle(_darkMapStyle);
-        } else {
+  void setMapStyle(GoogleMapController myController) async {
+    ref.listen(settingsProvider,
+        (SettingsController? previous, SettingsController next) {
+      ThemeMode theme = next.themeMode;
+      switch (theme) {
+        case ThemeMode.system:
+          final theme = WidgetsBinding.instance!.window.platformBrightness;
+          if (theme == Brightness.dark) {
+            myController.setMapStyle(_darkMapStyle);
+          } else {
+            myController.setMapStyle(_lightMapStyle);
+          }
+          break;
+        case ThemeMode.light:
           myController.setMapStyle(_lightMapStyle);
-        }
-        break;
-      case ThemeMode.light:
-        myController.setMapStyle(_lightMapStyle);
-        break;
-      case ThemeMode.dark:
-        myController.setMapStyle(_darkMapStyle);
-        break;
-    }
+          break;
+        case ThemeMode.dark:
+          myController.setMapStyle(_darkMapStyle);
+          break;
+      }
+    });
   }
 
   Future<void> loadMarkers() async {
@@ -193,7 +197,7 @@ class MapController with ChangeNotifier {
                 strokeColor: Colors.transparent),
           );
     controller.animateCamera(
-        CameraUpdate.newLatLngZoom(ref.read(locationProvider).myLocation, 13));
+        CameraUpdate.newLatLngZoom(ref.read(locationProvider).myLocation, 15));
     notifyListeners();
   }
 }

@@ -17,8 +17,6 @@ class PlacePicker extends ConsumerStatefulWidget {
 
 class _PlacePickerState extends ConsumerState<PlacePicker> {
   late CameraPosition cameraPosition;
-
-  Completer<GoogleMapController> controller = Completer();
   @override
   void initState() {
     cameraPosition =
@@ -48,13 +46,13 @@ class _PlacePickerState extends ConsumerState<PlacePicker> {
             } else if (locationController.serviceEnabled!) {
               return MapView(
                 myLocation: locationController.myLocation,
-                controller: controller,
+                isPlacePicker: true,
                 onCameraMove: (CameraPosition currentCameraPosition) {
                   cameraPosition = currentCameraPosition; //when map is dragging
                 },
                 onCameraIdle: () async {
                   //when map drag stops
-                  String address = await MapService().getAddress(
+                  String address = await MapService.getAddress(
                     cameraPosition.target,
                   );
                   setState(() {

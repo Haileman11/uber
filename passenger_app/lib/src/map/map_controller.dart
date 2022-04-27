@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:common/dio_client.dart';
 import 'package:common/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:passenger_app/src/services/location_service.dart';
 import 'package:tuple/tuple.dart';
 
 import 'map_service.dart';
@@ -38,8 +40,8 @@ class MapController with ChangeNotifier {
   String googleAPiKey = "AIzaSyAZncMtP-Cfxml3YvAtKLL4uOEeGub4Zrc";
   String googleDirectionsAPiKey = "AIzaSyBRErov981d9m8yhEyHOD7FVPQtfuO7OsI";
 
-  Future setMapStyle(GoogleMapController myController) async {
-    switch (ref.watch(settingsProvider).themeMode) {
+  void setMapStyle(GoogleMapController myController, ThemeMode theme) {
+    switch (theme) {
       case ThemeMode.system:
         final theme = WidgetsBinding.instance!.window.platformBrightness;
         if (theme == Brightness.dark) {
@@ -57,6 +59,14 @@ class MapController with ChangeNotifier {
     }
   }
 
+  void addMapStyleListner(GoogleMapController myController) {
+    ref.listen(settingsProvider,
+        (SettingsController? previous, SettingsController next) {
+      ThemeMode theme = next.themeMode;
+      setMapStyle(myController, theme);
+    });
+  }
+
   Future<void> loadMarkers() async {
     List<LatLng> markersLocation = await _mapService.loadMarkersLocation();
     _markers = markersLocation.map(
@@ -69,17 +79,42 @@ class MapController with ChangeNotifier {
     notifyListeners();
   }
 
-  _createPolylines(double startLatitude, double startLongitude,
-      double destinationLatitude, double destinationLongitude) async {
-    PolylinePoints polylinePoints = PolylinePoints();
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleDirectionsAPiKey,
-      PointLatLng(startLatitude, startLongitude),
-      PointLatLng(destinationLatitude, destinationLongitude),
-      travelMode: TravelMode.driving,
-    );
-    if (result.points.isNotEmpty) {
-      for (var point in result.points) {
+  // _createPolylines(double startLatitude, double startLongitude,
+  //     double destinationLatitude, double destinationLongitude) async {
+  //   PolylinePoints polylinePoints = PolylinePoints();
+  //   PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+  //     googleDirectionsAPiKey,
+  //     PointLatLng(startLatitude, startLongitude),
+  //     PointLatLng(destinationLatitude, destinationLongitude),
+  //     travelMode: TravelMode.driving,
+  //   );
+  //   if (result.points.isNotEmpty) {
+  //     for (var point in result.points) {
+  //       polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+  //     }
+  //   }
+
+  //   PolylineId id = const PolylineId('poly');
+  //   Polyline polyline = Polyline(
+  //     polylineId: id,
+  //     color: Colors.red,
+  //     points: polylineCoordinates,
+  //     width: 3,
+  //   );
+  //   polylines[id] = polyline;
+  //   print(result.points);
+  // }
+
+  Future<double> calculatePolyline(
+      LatLng origin, LatLng destination, List<LatLng> wayPoints) async {
+    Map response =
+        await _mapService.getPolyline(origin, destination, wayPoints);
+    String encodedPolylineString = response['polyline'];
+    List<PointLatLng> polylinePoints =
+        PolylinePoints().decodePolyline(encodedPolylineString);
+    List<LatLng> polylineCoordinates = [];
+    if (polylinePoints.isNotEmpty) {
+      for (var point in polylinePoints) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       }
     }
@@ -92,7 +127,7 @@ class MapController with ChangeNotifier {
       width: 3,
     );
     polylines[id] = polyline;
-    print(result.points);
+    return double.parse(response['distance'].toString());
   }
 
   Future<double> calculateDistance(
@@ -127,9 +162,10 @@ class MapController with ChangeNotifier {
 
     // Accommodate the two locations within the
     // camera view of the map
-    await _createPolylines(startLatitude, startLongitude, destinationLatitude,
-        destinationLongitude);
-
+    // await _createPolylines(startLatitude, startLongitude, destinationLatitude,
+    //     destinationLongitude);
+    double totalDistance =
+        await calculatePolyline(myLocation, myDestination, []);
     controller.animateCamera(
       CameraUpdate.newLatLngBounds(
         LatLngBounds(
@@ -140,33 +176,33 @@ class MapController with ChangeNotifier {
       ),
     );
 
-    double totalDistance = 0.0;
+    // double totalDistance = 0.0;
 
-    // Calculating the total distance by adding the distance
-    // between small segments
-    for (int i = 0; i < polylineCoordinates.length - 1; i++) {
-      totalDistance += _coordinateDistance(
-        polylineCoordinates[i].latitude,
-        polylineCoordinates[i].longitude,
-        polylineCoordinates[i + 1].latitude,
-        polylineCoordinates[i + 1].longitude,
-      );
-    }
+    // // Calculating the total distance by adding the distance
+    // // between small segments
+    // for (int i = 0; i < polylineCoordinates.length - 1; i++) {
+    //   totalDistance += _coordinateDistance(
+    //     polylineCoordinates[i].latitude,
+    //     polylineCoordinates[i].longitude,
+    //     polylineCoordinates[i + 1].latitude,
+    //     polylineCoordinates[i + 1].longitude,
+    //   );
+    // }
     notifyListeners();
     return totalDistance;
   }
 
-  double _coordinateDistance(lat1, lon1, lat2, lon2) {
-    var p = 0.017453292519943295;
-    var c = cos;
-    var a = 0.5 -
-        c((lat2 - lat1) * p) / 2 +
-        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a));
-  }
+  // double _coordinateDistance(lat1, lon1, lat2, lon2) {
+  //   var p = 0.017453292519943295;
+  //   var c = cos;
+  //   var a = 0.5 -
+  //       c((lat2 - lat1) * p) / 2 +
+  //       c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+  //   return 12742 * asin(sqrt(a));
+  // }
 
   void addDestination(LatLng currentPosition) async {
-    var destinationName = await _mapService.getAddress(currentPosition);
+    var destinationName = await MapService.getAddress(currentPosition);
     destinations.add(Tuple2(destinationName, currentPosition));
     notifyListeners();
   }
@@ -175,12 +211,14 @@ class MapController with ChangeNotifier {
     destinations.clear();
     polylines.clear();
     polylineCoordinates.clear();
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: ref.read(locationProvider).myLocation, zoom: 16)));
     notifyListeners();
   }
 }
 
 final mapProvider = ChangeNotifierProvider(((ref) {
-  return MapController(MapService(), ref);
+  return MapController(MapService(ref.read(dioClientProvider)), ref);
 }));
 final markersStreamProvider = StreamProvider(((ref) {
   return ref.watch(mapProvider).markersStateChanges();

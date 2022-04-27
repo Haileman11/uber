@@ -116,6 +116,10 @@ class ErrorInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) async {
     if (err.error is SocketException) {
+      showSnackBar(
+          navigationService.navigatorKey.currentState!.overlay!.context,
+          "Socket Exception",
+          true);
       // Response response;
       // response = await showErrorDialog(
       //     navigationService.navigatorKey.currentState.overlay.context, err,
@@ -142,7 +146,7 @@ class ErrorInterceptor extends Interceptor {
         if (err.response != null) {
           showSnackBar(
               navigationService.navigatorKey.currentState!.overlay!.context,
-              err.response!.data['message'],
+              "Not found",
               true);
         }
       }

@@ -16,8 +16,11 @@ dependencies:
     path: ../packages/common
   country_code_picker: ^2.0.2
   dio: ^4.0.6
+  firebase_core: ^1.15.0
+  firebase_messaging: ^11.2.14
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^9.4.1
   flutter_localizations:
     sdk: flutter
   flutter_polyline_points: ^1.0.0

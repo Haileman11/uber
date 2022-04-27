@@ -19,6 +19,8 @@ class TripListView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recent Trips'),
+        // elevation: 0.0,
+        // backgroundColor: Colors.transparent,
       ),
 
       // To work with lists that may contain a large number of items, it’s best
