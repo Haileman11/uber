@@ -10,8 +10,6 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
-  authentication:
-    path: ../packages/authentication
   common:
     path: ../packages/common
   country_code_picker: ^2.0.2

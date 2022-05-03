@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:common/dio_client.dart';
 import 'package:common/settings/settings_controller.dart';
 import 'package:driver_app/src/services/location_service.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ import 'package:tuple/tuple.dart';
 import 'map_service.dart';
 
 class MapController with ChangeNotifier {
+  bool isLoading = false;
+
   MapController(this._mapService, this.ref) {
     Future.sync(() async {
       _darkMapStyle = await _mapService.loadDarkMapStyles();
@@ -74,22 +77,26 @@ class MapController with ChangeNotifier {
     notifyListeners();
   }
 
-  _createPolylines(double startLatitude, double startLongitude,
-      double destinationLatitude, double destinationLongitude) async {
-    PolylinePoints polylinePoints = PolylinePoints();
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleDirectionsAPiKey,
-      PointLatLng(startLatitude, startLongitude),
-      PointLatLng(destinationLatitude, destinationLongitude),
-      travelMode: TravelMode.driving,
-    );
-    if (result.points.isNotEmpty) {
-      for (var point in result.points) {
+  Future<double> calculatePolyline(
+      LatLng origin, LatLng destination, List<LatLng> wayPoints) async {
+    Map response =
+        await _mapService.getPolyline(origin, destination, wayPoints);
+    String encodedPolylineString = response['polyline'];
+    decodePolyline(encodedPolylineString, response['polylineId']);
+    return double.parse(response['distance'].toString());
+  }
+
+  void decodePolyline(String encodedPolylineString, polylineId) {
+    List<PointLatLng> polylinePoints =
+        PolylinePoints().decodePolyline(encodedPolylineString);
+    List<LatLng> polylineCoordinates = [];
+    if (polylinePoints.isNotEmpty) {
+      for (var point in polylinePoints) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       }
     }
 
-    PolylineId id = const PolylineId('poly');
+    PolylineId id = PolylineId(polylineId);
     Polyline polyline = Polyline(
       polylineId: id,
       color: Colors.red,
@@ -97,17 +104,13 @@ class MapController with ChangeNotifier {
       width: 3,
     );
     polylines[id] = polyline;
-    print(result.points);
   }
 
-  Future<double> calculateDistance(
-      LatLng myLocation, LatLng myDestination) async {
-    print(myLocation);
-    print(myDestination);
-    double startLatitude = myLocation.latitude;
-    double startLongitude = myLocation.longitude;
-    double destinationLatitude = myDestination.latitude;
-    double destinationLongitude = myDestination.longitude;
+  void updateCameraToPositions(LatLng origin, LatLng destination) {
+    double startLatitude = origin.latitude;
+    double startLongitude = origin.longitude;
+    double destinationLatitude = destination.latitude;
+    double destinationLongitude = destination.longitude;
 
     // Calculating to check that the position relative
     // to the frame, and pan & zoom the camera accordingly.
@@ -130,11 +133,6 @@ class MapController with ChangeNotifier {
     double northEastLatitude = maxy;
     double northEastLongitude = maxx;
 
-    // Accommodate the two locations within the
-    // camera view of the map
-    await _createPolylines(startLatitude, startLongitude, destinationLatitude,
-        destinationLongitude);
-
     controller.animateCamera(
       CameraUpdate.newLatLngBounds(
         LatLngBounds(
@@ -144,30 +142,25 @@ class MapController with ChangeNotifier {
         100.0,
       ),
     );
-
-    double totalDistance = 0.0;
-
-    // Calculating the total distance by adding the distance
-    // between small segments
-    for (int i = 0; i < polylineCoordinates.length - 1; i++) {
-      totalDistance += _coordinateDistance(
-        polylineCoordinates[i].latitude,
-        polylineCoordinates[i].longitude,
-        polylineCoordinates[i + 1].latitude,
-        polylineCoordinates[i + 1].longitude,
-      );
-    }
-    notifyListeners();
-    return totalDistance;
   }
 
-  double _coordinateDistance(lat1, lon1, lat2, lon2) {
-    var p = 0.017453292519943295;
-    var c = cos;
-    var a = 0.5 -
-        c((lat2 - lat1) * p) / 2 +
-        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a));
+  Future<double> calculateDistance(LatLng origin, LatLng destination,
+      {List<LatLng> waypoints = const []}) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      double totalDistance =
+          await calculatePolyline(origin, destination, waypoints);
+      notifyListeners();
+      updateCameraToPositions(origin, destination);
+      isLoading = false;
+      notifyListeners();
+      return totalDistance;
+    } catch (e) {
+      isLoading = false;
+      notifyListeners();
+      return Future.error(e);
+    }
   }
 
   void addDestination(LatLng currentPosition) async {
@@ -180,6 +173,19 @@ class MapController with ChangeNotifier {
     destinations.clear();
     polylines.clear();
     polylineCoordinates.clear();
+    notifyListeners();
+  }
+
+  void addPolyline(PolylineId polylineId, Polyline polyline) {
+    polylines[polylineId] = polyline;
+    notifyListeners();
+  }
+
+  void clearPolylines() {
+    polylines.clear();
+    polylineCoordinates.clear();
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: ref.read(locationProvider).myLocation, zoom: 16)));
     notifyListeners();
   }
 
@@ -203,7 +209,7 @@ class MapController with ChangeNotifier {
 }
 
 final mapProvider = ChangeNotifierProvider(((ref) {
-  return MapController(MapService(), ref);
+  return MapController(MapService(ref.read(dioClientProvider)), ref);
 }));
 final markersStreamProvider = StreamProvider(((ref) {
   return ref.watch(mapProvider).markersStateChanges();

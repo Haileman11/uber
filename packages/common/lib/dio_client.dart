@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:riverpod/riverpod.dart';
 
-import 'navigator_service.dart';
+import 'services/navigator_service.dart';
 import 'shared_preferences_service.dart';
 import 'ui/show_dialog.dart';
 import 'ui/show_snackbar.dart';

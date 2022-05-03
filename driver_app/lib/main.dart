@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:common/services/notification_service.dart';
 import 'package:common/settings/settings_controller.dart';
 import 'package:common/settings/settings_service.dart';
 import 'package:common/shared_preferences_service.dart';
 import 'package:driver_app/src/app.dart';
-import 'package:driver_app/src/services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';

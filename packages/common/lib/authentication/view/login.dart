@@ -1,7 +1,7 @@
-import 'package:authentication/authentication_controller.dart';
-import 'package:authentication/view/register.dart';
+import 'package:common/authentication/authentication_controller.dart';
+import 'package:common/authentication/view/register.dart';
+import 'package:common/services/notification_service.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
@@ -134,9 +134,12 @@ class _LoginFormState extends State<LoginForm> {
                 onPressed: () {
                   // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_)=>));
                   if (formKey.currentState!.validate()) {
+                    formKey.currentState!.save();
                     ref.read(authenticationProvider).login(
                           phoneNumber: phoneNumber,
                           password: passwordController.text,
+                          fcmToken:
+                              ref.read(notificationProvider).token ?? "asd",
                         );
                   }
                   //   {

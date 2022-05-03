@@ -1,7 +1,6 @@
-import 'package:authentication/view/login.dart';
-import 'package:authentication/view/register.dart';
+import './login.dart';
+import './register.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class UnAuth extends StatelessWidget {
   @override
@@ -83,64 +82,6 @@ class UnAuth extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Container(
-                    margin: EdgeInsets.only(top: 15.0),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 15.0,
-                    ),
-                    height: 45.0,
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(6.0),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(
-                          FontAwesomeIcons.facebookSquare,
-                          color: Colors.white,
-                        ),
-                        Expanded(
-                          child: Text(
-                            "Login with Facebook",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(top: 15.0),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 15.0,
-                    ),
-                    height: 45.0,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: _theme.primaryColor),
-                      borderRadius: BorderRadius.circular(6.0),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(
-                          FontAwesomeIcons.google,
-                          color: _theme.primaryColor,
-                        ),
-                        Expanded(
-                          child: Text(
-                            "Login with Google",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: _theme.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  )
                 ],
               ),
             )

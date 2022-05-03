@@ -1,4 +1,4 @@
-import 'package:authentication/authentication_controller.dart';
+import 'package:common/authentication/authentication_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authStateChangesProvider = StreamProvider<bool?>((ref) {

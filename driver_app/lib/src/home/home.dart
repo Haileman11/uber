@@ -1,8 +1,8 @@
 import 'package:common/ui/keep_alive.dart';
+import 'package:driver_app/src/booked-ride/ui/trip_list_view.dart';
 import 'package:driver_app/src/home/go.dart';
 import 'package:driver_app/src/home/profile.dart';
 import 'package:driver_app/src/map/map_controller.dart';
-import 'package:driver_app/src/trip/trip_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

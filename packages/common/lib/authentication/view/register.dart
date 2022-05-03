@@ -1,6 +1,6 @@
-import 'package:authentication/authentication_controller.dart';
-import 'package:authentication/view/login.dart';
-import 'package:authentication/view/otp_verification.dart';
+import 'package:common/services/notification_service.dart';
+
+import '../authentication_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -163,15 +163,16 @@ class _SignupFormState extends State<SignupForm> {
               width: MediaQuery.of(context).size.width,
               height: 45.0,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
                     ref.read(authenticationProvider).signup(
-                          firstName: firstNameController.text,
-                          lastName: lastNameController.text,
-                          phoneNumber: phoneNumber,
-                          password: passwordController.text,
-                        );
+                        firstName: firstNameController.text,
+                        lastName: lastNameController.text,
+                        phoneNumber: phoneNumber,
+                        password: passwordController.text,
+                        fcmToken:
+                            ref.read(notificationProvider).token ?? "asd");
                   }
                   // Navigator.of(context).push(
                   //     MaterialPageRoute(builder: (_) => OtpVerification()));

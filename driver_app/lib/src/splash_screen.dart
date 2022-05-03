@@ -1,4 +1,4 @@
-import 'package:authentication/view/login.dart';
+import 'package:common/authentication/view/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/shared_preferences_service.dart';

@@ -8,6 +8,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class LocationService with ChangeNotifier {
   bool? serviceEnabled;
   late LatLng myLocation;
+
+  bool isStreaming = false;
   Future<LatLng> getMyLocation() async {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
@@ -40,25 +42,36 @@ class LocationService with ChangeNotifier {
   }
 
   void startLocationStream() {
+    _locationController = StreamController<LatLng>();
     Geolocator.requestPermission().then((locationPermission) {
       if (locationPermission != LocationPermission.denied &&
           locationPermission != LocationPermission.deniedForever) {
         // If granted listen to the onLocationChanged stream and emit over our controller
         Geolocator.getPositionStream().listen((locationData) {
-          _locationController.add(LatLng(
-            locationData.latitude,
-            locationData.longitude,
-          ));
+          if (!_locationController.isClosed) {
+            _locationController.add(LatLng(
+              locationData.latitude,
+              locationData.longitude,
+            ));
+          }
         });
       }
     });
+    isStreaming = true;
+    notifyListeners();
   }
 
-  final StreamController<LatLng> _locationController =
-      StreamController<LatLng>();
+  late StreamController<LatLng> _locationController;
+
   Stream<LatLng> get locationStream => _locationController.stream;
+
+  void stopLocationStream() {
+    _locationController.close();
+    isStreaming = false;
+    notifyListeners();
+  }
 }
 
 final locationProvider = ChangeNotifierProvider(((ref) => LocationService()));
-final locationStreamProvider =
-    StreamProvider(((ref) => ref.read(locationProvider).locationStream));
+// final locationStreamProvider =
+//     StreamProvider.autoDispose(((ref) => ref.read(locationProvider).locationStream));

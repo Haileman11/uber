@@ -1,7 +1,7 @@
-import 'package:authentication/view/login.dart';
-import 'package:authentication/view/otp_verification.dart';
+import './view/login.dart';
+import './view/otp_verification.dart';
 import 'package:common/dio_client.dart';
-import 'package:common/navigator_service.dart';
+import 'package:common/services/navigator_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,12 +47,15 @@ class AuthenticationController with ChangeNotifier {
 
   /// Update and persist the ThemeMode based on the user's selection.
   Future<void> login(
-      {required String phoneNumber, required String password}) async {
+      {required String phoneNumber,
+      required String password,
+      required String fcmToken}) async {
     // Important! Inform listeners a change has occurred.
     final formData = {
-      "phoneNumber": phoneNumber,
+      "username": phoneNumber,
       "password": password,
-      "roleType": _userType.toShortString()
+      "loginRole": _userType.toShortString(),
+      "fcmToken": fcmToken
     };
     if (await _authenticationService.login(formData)) {
       loadLoggedInStatus();
@@ -66,6 +69,7 @@ class AuthenticationController with ChangeNotifier {
     required String lastName,
     required String password,
     required String phoneNumber,
+    required String fcmToken,
   }) async {
     Map<String, String> formData = {};
     // formData['firstName'] = firstName;
@@ -76,6 +80,7 @@ class AuthenticationController with ChangeNotifier {
     formData['firstName'] = firstName;
     formData['lastName'] = lastName;
     formData["roletype"] = _userType.toShortString();
+    formData['fcmToken'] = fcmToken;
     try {
       if (await _authenticationService.register(formData)) {
         _navigationService.navigateTo(MaterialPageRoute(

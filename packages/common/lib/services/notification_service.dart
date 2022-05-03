@@ -1,19 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:common/navigator_service.dart';
+import 'package:common/services/navigator_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class NotificationService {
+class NotificationService extends ChangeNotifier {
   static final NotificationService _notificationService =
       NotificationService._internal();
 
   factory NotificationService() {
     return _notificationService;
   }
-
+  String? token;
+  Map? bookingRequestJson;
+  Map? ongoingRideJson;
+  Map? completeRideJson;
   NotificationService._internal();
   late NavigationService _navigationService;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -29,8 +32,20 @@ class NotificationService {
 
   void onData(RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
-    Map data = message.data;
-    print(data);
+
+    print(message.data);
+    if (message.data["bookingRequestId"] != null) {
+      bookingRequestJson = message.data;
+      notifyListeners();
+    }
+    if (message.data["bookedRideId"] != null) {
+      if (message.data['rideStatus'] == "complete") {
+        completeRideJson = message.data;
+      } else {
+        ongoingRideJson = message.data;
+      }
+      notifyListeners();
+    }
 
     if (notification != null) {
       flutterLocalNotificationsPlugin.show(
@@ -45,7 +60,7 @@ class NotificationService {
             icon: 'launch_background',
           ),
         ),
-        payload: json.encode(data),
+        payload: json.encode(bookingRequestJson),
       );
     }
   }
@@ -82,7 +97,7 @@ class NotificationService {
         badge: true,
         sound: true,
       );
-      String? token = await FirebaseMessaging.instance.getToken();
+      token = await FirebaseMessaging.instance.getToken();
       print('FCM token\n ${token}');
     }
   }
@@ -99,3 +114,6 @@ class NotificationService {
     }
   }
 }
+
+final notificationProvider =
+    ChangeNotifierProvider((ref) => NotificationService());

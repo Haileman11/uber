@@ -11,6 +11,7 @@ class MapView extends ConsumerStatefulWidget {
   Map<PolylineId, Polyline>? polylines;
 
   Completer<GoogleMapController>? controller;
+  List<Marker>? markers;
 
   MapView({
     Key? key,
@@ -19,6 +20,7 @@ class MapView extends ConsumerStatefulWidget {
     this.onCameraMove,
     this.onCameraIdle,
     this.polylines,
+    this.markers,
   }) : super(key: key);
 
   @override
@@ -61,7 +63,8 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
           : Set<Polyline>.of(polylines.values),
       zoomControlsEnabled: false,
       myLocationEnabled: true,
-      markers: _markers.toSet(),
+      markers:
+          widget.markers != null ? widget.markers!.toSet() : _markers.toSet(),
       onMapCreated: (GoogleMapController controller) async {
         if (widget.controller == null) {
           mapController.controller = controller;

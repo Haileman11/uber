@@ -11,7 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class MapService {
   /// Persists the user's preferred ThemeMode to local or remote storage.
   late DioClient _dioClient;
-  static const calculatePolylineUrl = "Request/calculate-polyline";
+
   MapService(this._dioClient);
   Future<String> loadDarkMapStyles() async {
     return await rootBundle
@@ -50,32 +50,5 @@ class MapService {
     if (place.subLocality!.isNotEmpty) address += "${place.subLocality},";
     if (place.locality!.isNotEmpty) address += "${place.locality}";
     return address;
-  }
-
-  Future<Map> getPolyline(
-    LatLng origin,
-    LatLng destination,
-    List<LatLng> wayPoints,
-  ) async {
-    try {
-      List wayPointsArray = ["ds"];
-      for (var point in wayPoints) {
-        wayPointsArray.add("'${point.latitude},${point.longitude}'");
-      }
-
-      Response response =
-          await _dioClient.dio.post(calculatePolylineUrl, data: {
-        "origin": {"latitude": origin.latitude, "longitude": origin.longitude},
-        "destination": {
-          "latitude": destination.latitude,
-          "longitude": destination.longitude
-        },
-        "wayPoints": ["string"]
-      });
-      return response.data;
-    } catch (e) {
-      print(e);
-      return {};
-    }
   }
 }
