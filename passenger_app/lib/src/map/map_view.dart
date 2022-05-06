@@ -13,17 +13,17 @@ class MapView extends ConsumerStatefulWidget {
 
   List<Marker>? markers;
 
-  bool isPlacePicker;
+  MapView(
+      {Key? key,
+      required this.myLocation,
+      this.onCameraMove,
+      this.onCameraIdle,
+      this.polylines,
+      this.markers,
+      this.setController})
+      : super(key: key);
 
-  MapView({
-    Key? key,
-    required this.myLocation,
-    this.onCameraMove,
-    this.onCameraIdle,
-    this.polylines,
-    this.markers,
-    this.isPlacePicker = false,
-  }) : super(key: key);
+  Function(GoogleMapController controller)? setController;
 
   @override
   MapState createState() => MapState();
@@ -33,6 +33,8 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
   var polylines = <PolylineId, Polyline>{};
   List<Marker> _markers = [];
   late LatLng myLocation;
+
+  late GoogleMapController _controller;
   @override
   void initState() {
     super.initState();
@@ -43,8 +45,9 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() async {
     setState(() {
-      ref.read(mapProvider).setMapStyle(ref.read(mapProvider).controller,
-          ref.read(settingsProvider).themeMode);
+      ref
+          .read(mapProvider)
+          .setMapStyle(_controller, ref.read(settingsProvider).themeMode);
     });
   }
 
@@ -56,8 +59,6 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    MapController mapController = ref.watch(mapProvider);
-
     return GoogleMap(
       polylines: widget.polylines != null
           ? Set<Polyline>.of(widget.polylines!.values)
@@ -67,8 +68,9 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
       markers:
           widget.markers != null ? widget.markers!.toSet() : _markers.toSet(),
       onMapCreated: (GoogleMapController controller) async {
-        if (!widget.isPlacePicker) {
-          mapController.controller = controller;
+        _controller = controller;
+        if (widget.setController != null) {
+          widget.setController!(controller);
           ref.read(mapProvider).addMapStyleListner(controller);
         } else {
           ref

@@ -6,10 +6,12 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/services/notification_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:passenger_app/src/booking-request/ui/place_picker.dart';
 import 'package:passenger_app/src/splash_screen.dart';
 
-import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
+import 'complete-ride/complete_ride_details_view.dart';
+import 'map/map_controller.dart';
 
 /// The Widget that configures your application.
 class MyApp extends ConsumerWidget {
@@ -23,6 +25,7 @@ class MyApp extends ConsumerWidget {
     //
     // The AnimatedBuilder Widget listens to the SettingsController for changes.
     // Whenever the user updates their settings, the MaterialApp is rebuilt.
+    final mapController = ref.watch(mapProvider);
 
     return MaterialApp(
       // Providing a restorationScopeId allows the Navigator built by the
@@ -68,9 +71,12 @@ class MyApp extends ConsumerWidget {
             switch (routeSettings.name) {
               case SettingsView.routeName:
                 return const SettingsView();
-              case SampleItemDetailsView.routeName:
-                return const SampleItemDetailsView();
-              case SampleItemListView.routeName:
+              // case CompleteRideDetailsView.routeName:
+              //   return const CompleteRideDetailsView(routeSettings.arguments);
+              // case SampleItemListView.routeName:
+              //   return Container();
+              case PlacePicker.routeName:
+                return PlacePicker();
               default:
                 return FutureBuilder(
                     future: NotificationService().init(ref),

@@ -7,9 +7,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:passenger_app/src/map/map_service.dart';
 import 'package:passenger_app/src/map/map_view.dart';
 import 'package:passenger_app/src/services/location_service.dart';
+import 'package:tuple/tuple.dart';
 
 class PlacePicker extends ConsumerStatefulWidget {
-  const PlacePicker({Key? key}) : super(key: key);
+  static const routeName = '/place_picker';
+
+  const PlacePicker({
+    Key? key,
+  }) : super(key: key);
 
   @override
   ConsumerState<PlacePicker> createState() => _PlacePickerState();
@@ -19,8 +24,10 @@ class _PlacePickerState extends ConsumerState<PlacePicker> {
   late CameraPosition cameraPosition;
   @override
   void initState() {
-    cameraPosition =
-        CameraPosition(target: ref.read(locationProvider).myLocation);
+    cameraPosition = CameraPosition(
+        target: ref.read(locationProvider).serviceEnabled != null
+            ? ref.read(locationProvider).myLocation
+            : LatLng(9, 38));
     super.initState();
   }
 
@@ -46,7 +53,6 @@ class _PlacePickerState extends ConsumerState<PlacePicker> {
             } else if (locationController.serviceEnabled!) {
               return MapView(
                 myLocation: locationController.myLocation,
-                isPlacePicker: true,
                 onCameraMove: (CameraPosition currentCameraPosition) {
                   cameraPosition = currentCameraPosition; //when map is dragging
                 },
@@ -116,7 +122,10 @@ class _PlacePickerState extends ConsumerState<PlacePicker> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).pop(cameraPosition.target);
+                          Navigator.of(context).pop(Tuple2(
+                            location ?? "",
+                            cameraPosition.target,
+                          ));
                         },
                         child: Text("Select Location"))
                   ],

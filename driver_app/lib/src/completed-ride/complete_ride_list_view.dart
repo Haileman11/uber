@@ -1,7 +1,7 @@
 import 'package:common/settings/settings_view.dart';
 import 'package:flutter/material.dart';
-import 'trip_item.dart';
-import 'trip_details_view.dart';
+import '../booked-ride/ui/trip_item.dart';
+import '../booked-ride/ui/trip_details_view.dart';
 
 /// Displays a list of SampleItems.
 class TripListView extends StatelessWidget {

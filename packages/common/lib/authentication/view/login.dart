@@ -139,7 +139,7 @@ class _LoginFormState extends State<LoginForm> {
                           phoneNumber: phoneNumber,
                           password: passwordController.text,
                           fcmToken:
-                              ref.read(notificationProvider).token ?? "asd",
+                              ref.read(notificationProvider).token ?? "null",
                         );
                   }
                   //   {

@@ -5,6 +5,7 @@ import 'package:common/dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -23,7 +24,7 @@ class MapService {
         .loadString('packages/common/assets/map_styles/light.json');
   }
 
-  Future<BitmapDescriptor> loadCarBitmap() async {
+  static Future<BitmapDescriptor> loadCarBitmap() async {
     return await BitmapDescriptor.fromAssetImage(
         const ImageConfiguration(size: Size(24, 24)),
         Platform.isIOS
@@ -39,7 +40,7 @@ class MapService {
     ];
   }
 
-  Future<String> getAddress(LatLng currentPosition) async {
+  static Future<String> getAddress(LatLng currentPosition) async {
     List<Placemark> p = await placemarkFromCoordinates(
         currentPosition.latitude, currentPosition.longitude);
     Placemark place = p[0];
@@ -83,7 +84,7 @@ class MapService {
     }
   }
 
-  String _encode_poly(List<List<double>> coordinates, int precision) {
+  static String encodePoly(List<List<double>> coordinates, int? precision) {
     if (coordinates.length == null) {
       return '';
     }
@@ -107,7 +108,7 @@ class MapService {
   /// @param {double} previous
   /// @param {int} factor
   /// @returns {String}
-  String _encode(double current, double previous, int factor) {
+  static String _encode(double current, double previous, int factor) {
     final _current = (current * factor).round();
     final _previous = (previous * factor).round();
 
@@ -124,5 +125,63 @@ class MapService {
     }
     output += String.fromCharCode(coordinate + 63);
     return output;
+  }
+
+  static Polyline decodePolyline(String encodedPolylineString, polylineId) {
+    List<PointLatLng> polylinePoints =
+        PolylinePoints().decodePolyline(encodedPolylineString);
+    List<LatLng> polylineCoordinates = [];
+    if (polylinePoints.isNotEmpty) {
+      for (var point in polylinePoints) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      }
+    }
+
+    PolylineId id = PolylineId(polylineId);
+    return Polyline(
+      polylineId: id,
+      color: Colors.red,
+      points: polylineCoordinates,
+      width: 3,
+    );
+  }
+
+  static void updateCameraToPositions(
+      LatLng origin, LatLng destination, GoogleMapController controller) {
+    double startLatitude = origin.latitude;
+    double startLongitude = origin.longitude;
+    double destinationLatitude = destination.latitude;
+    double destinationLongitude = destination.longitude;
+
+    // Calculating to check that the position relative
+    // to the frame, and pan & zoom the camera accordingly.
+    double miny = (startLatitude <= destinationLatitude)
+        ? startLatitude
+        : destinationLatitude;
+    double minx = (startLongitude <= destinationLongitude)
+        ? startLongitude
+        : destinationLongitude;
+    double maxy = (startLatitude <= destinationLatitude)
+        ? destinationLatitude
+        : startLatitude;
+    double maxx = (startLongitude <= destinationLongitude)
+        ? destinationLongitude
+        : startLongitude;
+
+    double southWestLatitude = miny;
+    double southWestLongitude = minx;
+
+    double northEastLatitude = maxy;
+    double northEastLongitude = maxx;
+
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          northeast: LatLng(northEastLatitude, northEastLongitude),
+          southwest: LatLng(southWestLatitude, southWestLongitude),
+        ),
+        100.0,
+      ),
+    );
   }
 }

@@ -1,5 +1,5 @@
-import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
-import 'package:driver_app/src/booking-request/booking_request_controller.dart';
+import 'package:driver_app/src/booking-request/booking_request_view.dart';
+import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -38,25 +38,18 @@ class _HomepageState extends ConsumerState<GoTab> {
     final ThemeData _theme = Theme.of(context);
     final locationController = ref.watch(locationProvider);
     final mapController = ref.watch(mapProvider);
-    final bookedRideController = ref.watch(bookedRideProvider);
-    final bookingRequestController = ref.watch(bookingRequestProvider);
 
     return Scaffold(
-      bottomSheet: bookingRequestController.bookingRequest == null
-          ? null
-          : bookingRequestWidget(mapController, bookingRequestController),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: bookingRequestController.bookingRequest != null
-          ? null
-          : FloatingActionButton(
-              child: Text(mapController.circles.isEmpty ? "Go" : "Stop"),
-              backgroundColor: mapController.circles.isEmpty
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.red,
-              onPressed: () {
-                //TODO
-                mapController.toggleCircle();
-              }),
+      floatingActionButton: FloatingActionButton(
+          child: Text(mapController.circles.isEmpty ? "Go" : "Stop"),
+          backgroundColor: mapController.circles.isEmpty
+              ? Theme.of(context).colorScheme.primary
+              : Colors.red,
+          onPressed: () {
+            //TODO
+            mapController.toggleCircle();
+          }),
       body: SafeArea(
         child: Stack(
           children: <Widget>[
@@ -104,7 +97,7 @@ class _HomepageState extends ConsumerState<GoTab> {
                       ),
                       TextButton(
                         onPressed: () async {
-                          setState(() {});
+                          locationController.getMyLocation();
                         },
                         child: const Text("Refresh"),
                       ),
@@ -113,124 +106,9 @@ class _HomepageState extends ConsumerState<GoTab> {
                 );
               }
             }),
-            if (bookedRideController.bookedRide != null)
-              Positioned(
-                left: 0,
-                bottom: 0,
-                right: 0,
-                child: Column(
-                  children: [
-                    ElevatedButton(
-                        onPressed: () {
-                          !locationController.isStreaming
-                              ? bookedRideController.startTrackingTrip()
-                              : bookedRideController.completeTrip();
-                        },
-                        child: Text(!locationController.isStreaming
-                            ? "Start trip"
-                            : "Complete")),
-                  ],
-                ),
-              ),
-            if (bookedRideController.bookedRide != null)
-              Positioned(
-                left: 0,
-                top: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () async {},
-                        child: CircleAvatar(
-                          radius: 25.0,
-                          backgroundImage:
-                              NetworkImage("https://picsum.photos/200/300"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
-  }
-
-  Widget bookingRequestWidget(MapController mapController,
-      BookingRequestController bookingRequestController) {
-    return BottomSheet(
-        enableDrag: false,
-        onClosing: () {
-          mapController.clearDestinations();
-        },
-        builder: (context) {
-          return Container(
-            padding: const EdgeInsets.all(8.0),
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const SizedBox(
-                    height: 10.0,
-                  ),
-                  Card(
-                    child: ListTile(
-                      leading: Text("Price"),
-                      title: Text(bookingRequestController.bookingRequest!.price
-                              .toStringAsFixed(0) +
-                          " ETB"),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 15.0,
-                  ),
-                  // ...mapController.destinations.map(((e) => Card(
-                  //         child: ListTile(
-                  //       title: Text(e.item1),
-                  //     )))),
-                  Card(
-                    child: ListTile(
-                      leading: Text("Distance"),
-                      title: Text(bookingRequestController
-                              .bookingRequest!.distance
-                              .toStringAsFixed(0) +
-                          " meters"),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                            onPressed: () async {
-                              await bookingRequestController
-                                  .acceptBookingRequest(false);
-                              mapController.clearDestinations();
-                            },
-                            child: Text("Decline")),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                await bookingRequestController
-                                    .acceptBookingRequest(true);
-                              },
-                              child: const Text("Accept")),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
   }
 }

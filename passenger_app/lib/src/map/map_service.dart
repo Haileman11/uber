@@ -5,6 +5,7 @@ import 'package:common/dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -50,5 +51,63 @@ class MapService {
     if (place.subLocality!.isNotEmpty) address += "${place.subLocality},";
     if (place.locality!.isNotEmpty) address += "${place.locality}";
     return address;
+  }
+
+  static Polyline decodePolyline(String encodedPolylineString, polylineId) {
+    List<PointLatLng> polylinePoints =
+        PolylinePoints().decodePolyline(encodedPolylineString);
+    List<LatLng> polylineCoordinates = [];
+    if (polylinePoints.isNotEmpty) {
+      for (var point in polylinePoints) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      }
+    }
+
+    PolylineId id = PolylineId(polylineId);
+    return Polyline(
+      polylineId: id,
+      color: Colors.red,
+      points: polylineCoordinates,
+      width: 3,
+    );
+  }
+
+  static void updateCameraToPositions(
+      LatLng origin, LatLng destination, GoogleMapController controller) {
+    double startLatitude = origin.latitude;
+    double startLongitude = origin.longitude;
+    double destinationLatitude = destination.latitude;
+    double destinationLongitude = destination.longitude;
+
+    // Calculating to check that the position relative
+    // to the frame, and pan & zoom the camera accordingly.
+    double miny = (startLatitude <= destinationLatitude)
+        ? startLatitude
+        : destinationLatitude;
+    double minx = (startLongitude <= destinationLongitude)
+        ? startLongitude
+        : destinationLongitude;
+    double maxy = (startLatitude <= destinationLatitude)
+        ? destinationLatitude
+        : startLatitude;
+    double maxx = (startLongitude <= destinationLongitude)
+        ? destinationLongitude
+        : startLongitude;
+
+    double southWestLatitude = miny;
+    double southWestLongitude = minx;
+
+    double northEastLatitude = maxy;
+    double northEastLongitude = maxx;
+
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          northeast: LatLng(northEastLatitude, northEastLongitude),
+          southwest: LatLng(southWestLatitude, southWestLongitude),
+        ),
+        100.0,
+      ),
+    );
   }
 }

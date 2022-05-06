@@ -17,6 +17,7 @@ class LocationService with ChangeNotifier {
 
     // Test if location services are enabled.
     if (!serviceEnabled!) {
+      notifyListeners();
       return Future.error('Location services are disabled.');
     }
 
@@ -24,11 +25,13 @@ class LocationService with ChangeNotifier {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        notifyListeners();
         return Future.error('Location permissions are denied');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
+      notifyListeners();
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }

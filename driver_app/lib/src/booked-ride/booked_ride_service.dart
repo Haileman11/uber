@@ -1,28 +1,29 @@
 import 'package:common/dio_client.dart';
 import 'package:dio/dio.dart';
+import 'package:driver_app/src/booked-ride/booked_ride.dart';
 
 class BookedRideService {
   /// Persists the user's preferred ThemeMode to local or remote storage.
   late DioClient _dioClient;
-  static const acceptBookingUrl = "Request/accept-booking-request";
+  static const completeTripUrl = "Request/complete-trip";
   BookedRideService(this._dioClient);
 
-  Future<Map> acceptBookingRequest(
+  Future<BookedRide> completeTrip(
     String bookingId,
-    bool acceptRequest,
+    String encodedPolyline,
   ) async {
     try {
       Response response;
-      response = await _dioClient.dio.post(acceptBookingUrl,
+      response = await _dioClient.dio.post(completeTripUrl,
           data: {
-            "requestAccepted": acceptRequest,
-            "bookingRequestId": bookingId
+            "bookedRideId": bookingId,
+            "encodedPointsList": encodedPolyline
           },
           options: Options(headers: {'requiresToken': true}));
-      return response.data;
+      return BookedRide.fromJson(response.data);
     } catch (e) {
       print(e);
-      return {};
+      return Future.error(e);
     }
   }
 }

@@ -1,26 +1,35 @@
 import 'package:common/settings/settings_view.dart';
 import 'package:flutter/material.dart';
-import 'trip_item.dart';
-import 'trip_details_view.dart';
+import 'sample_item.dart';
+import 'complete_ride_details_view.dart';
 
 /// Displays a list of SampleItems.
-class TripListView extends StatelessWidget {
-  const TripListView({
+class CompleteRideListView extends StatelessWidget {
+  const CompleteRideListView({
     Key? key,
-    this.items = const [Trip(1), Trip(2), Trip(3)],
+    this.items = const [SampleItem(1), SampleItem(2), SampleItem(3)],
   }) : super(key: key);
 
-  static const routeName = '/';
+  static const routeName = '/booking-history';
 
-  final List<Trip> items;
+  final List<SampleItem> items;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recent Trips'),
-        // elevation: 0.0,
-        // backgroundColor: Colors.transparent,
+        title: const Text('Booking history'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Navigate to the settings page. If the user leaves and returns
+              // to the app after it has been killed while running in the
+              // background, the navigation stack is restored.
+              Navigator.restorablePushNamed(context, SettingsView.routeName);
+            },
+          ),
+        ],
       ),
 
       // To work with lists that may contain a large number of items, it’s best
@@ -41,16 +50,16 @@ class TripListView extends StatelessWidget {
           return ListTile(
               title: Text('SampleItem ${item.id}'),
               leading: const CircleAvatar(
-                  // Display the Flutter Logo image asset.
-
-                  ),
+                // Display the Flutter Logo image asset.
+                foregroundImage: AssetImage('assets/images/flutter_logo.png'),
+              ),
               onTap: () {
                 // Navigate to the details page. If the user leaves and returns to
                 // the app after it has been killed while running in the
                 // background, the navigation stack is restored.
                 Navigator.restorablePushNamed(
                   context,
-                  TripDetailsView.routeName,
+                  CompleteRideDetailsView.routeName,
                 );
               });
         },

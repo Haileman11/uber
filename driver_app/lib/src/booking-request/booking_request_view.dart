@@ -1,6 +1,7 @@
-import 'package:driver_app/src/map/map_controller.dart';
+import 'package:driver_app/src/booked-ride/ui/booked_ride_view.dart';
 import 'package:driver_app/src/map/map_view.dart';
 import 'package:driver_app/src/services/location_service.dart';
+import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,50 +17,37 @@ class BookingRequestView extends ConsumerStatefulWidget {
 }
 
 class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
-  late final ThemeData _theme;
-  late final locationController;
-  late final mapController;
-  late final bookedRideController;
-  late final bookingRequestController;
-  @override
-  void initState() {
-    _theme = Theme.of(context);
-    locationController = ref.watch(locationProvider);
-    mapController = ref.watch(mapProvider);
-    bookingRequestController = ref.watch(bookingRequestProvider);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final locationController = ref.watch(locationProvider);
+    final bookingRequestController = ref.watch(bookingRequestProvider);
+
     return Scaffold(
-      bottomSheet:
-          bookingRequestWidget(mapController, bookingRequestController),
+      bottomSheet: bookingRequestWidget(bookingRequestController),
       body: Stack(children: [
         CustomScrollView(physics: NeverScrollableScrollPhysics(), slivers: [
           SliverToBoxAdapter(
             child: Container(
-                constraints: BoxConstraints(
-                    maxHeight: mapController.destinations.isEmpty
-                        ? MediaQuery.of(context).size.height
-                        : MediaQuery.of(context).size.height * 0.6),
-                child: MapView(
-                    myLocation: locationController.myLocation,
-                    polylines: mapController.polylines,
-                    markers: mapController.markers)),
+              constraints: BoxConstraints(
+                  maxHeight: bookingRequestController.destinations.isEmpty
+                      ? MediaQuery.of(context).size.height
+                      : MediaQuery.of(context).size.height * 0.6),
+              child: MapView(
+                  myLocation: locationController.myLocation,
+                  polylines: bookingRequestController.polylines,
+                  markers: bookingRequestController.markers),
+            ),
           ),
         ]),
       ]),
     );
   }
 
-  Widget bookingRequestWidget(MapController mapController,
+  Widget bookingRequestWidget(
       BookingRequestController bookingRequestController) {
     return BottomSheet(
         enableDrag: false,
-        onClosing: () {
-          mapController.clearDestinations();
-        },
+        onClosing: () {},
         builder: (context) {
           return Container(
             padding: const EdgeInsets.all(8.0),
@@ -104,7 +92,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                             onPressed: () async {
                               await bookingRequestController
                                   .acceptBookingRequest(false);
-                              mapController.clearDestinations();
+                              Navigator.of(context).pop();
                             },
                             child: Text("Decline")),
                       ),
@@ -113,8 +101,12 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                           padding: const EdgeInsets.all(4.0),
                           child: ElevatedButton(
                               onPressed: () async {
-                                await bookingRequestController
-                                    .acceptBookingRequest(true);
+                                if (await bookingRequestController
+                                    .acceptBookingRequest(true)) ;
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (_) => BookedRideView()),
+                                );
                               },
                               child: const Text("Accept")),
                         ),

@@ -2,8 +2,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BookedRide {
   late String bookedRideId;
-  late String distance;
-  late String price;
+  late double distance;
+  late double price;
   late LatLng origin;
   late LatLng destination;
   late String polyline;
@@ -19,8 +19,8 @@ class BookedRide {
   });
   BookedRide.fromJson(json) {
     bookedRideId = json['bookedRideId'];
-    distance = json['distance'] ?? "0";
-    price = json['price'] ?? "0";
+    distance = double.parse(json['distance']);
+    price = double.parse(json['price']);
     origin = LatLng(
       double.parse(json['originlatitude']),
       double.parse(json['originlongitude']),

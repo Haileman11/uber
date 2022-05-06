@@ -10,19 +10,19 @@ class MapView extends ConsumerStatefulWidget {
   Function(CameraPosition cameraPosition)? onCameraMove;
   Map<PolylineId, Polyline>? polylines;
 
-  Completer<GoogleMapController>? controller;
   List<Marker>? markers;
 
   MapView({
     Key? key,
     required this.myLocation,
-    this.controller,
     this.onCameraMove,
     this.onCameraIdle,
     this.polylines,
     this.markers,
+    this.setController,
   }) : super(key: key);
 
+  Function(GoogleMapController controller)? setController;
   @override
   MapState createState() => MapState();
 }
@@ -66,12 +66,12 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
       markers:
           widget.markers != null ? widget.markers!.toSet() : _markers.toSet(),
       onMapCreated: (GoogleMapController controller) async {
-        if (widget.controller == null) {
-          mapController.controller = controller;
+        if (widget.setController != null) {
+          widget.setController!(controller);
           ref.read(mapProvider).setMapStyle(mapController.controller);
         } else {
-          widget.controller!.complete(controller);
-          ref.read(mapProvider).setMapStyle(await widget.controller!.future);
+          mapController.controller = controller;
+          ref.read(mapProvider).setMapStyle(controller);
         }
       },
       initialCameraPosition: CameraPosition(

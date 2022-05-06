@@ -17,6 +17,7 @@ class MapController with ChangeNotifier {
     Future.sync(() async {
       _darkMapStyle = await _mapService.loadDarkMapStyles();
       _lightMapStyle = await _mapService.loadLightMapStyles();
+      myIcon = await MapService.loadCarBitmap();
     });
   }
   final MapService _mapService;
@@ -106,65 +107,8 @@ class MapController with ChangeNotifier {
     polylines[id] = polyline;
   }
 
-  void updateCameraToPositions(LatLng origin, LatLng destination) {
-    double startLatitude = origin.latitude;
-    double startLongitude = origin.longitude;
-    double destinationLatitude = destination.latitude;
-    double destinationLongitude = destination.longitude;
-
-    // Calculating to check that the position relative
-    // to the frame, and pan & zoom the camera accordingly.
-    double miny = (startLatitude <= destinationLatitude)
-        ? startLatitude
-        : destinationLatitude;
-    double minx = (startLongitude <= destinationLongitude)
-        ? startLongitude
-        : destinationLongitude;
-    double maxy = (startLatitude <= destinationLatitude)
-        ? destinationLatitude
-        : startLatitude;
-    double maxx = (startLongitude <= destinationLongitude)
-        ? destinationLongitude
-        : startLongitude;
-
-    double southWestLatitude = miny;
-    double southWestLongitude = minx;
-
-    double northEastLatitude = maxy;
-    double northEastLongitude = maxx;
-
-    controller.animateCamera(
-      CameraUpdate.newLatLngBounds(
-        LatLngBounds(
-          northeast: LatLng(northEastLatitude, northEastLongitude),
-          southwest: LatLng(southWestLatitude, southWestLongitude),
-        ),
-        100.0,
-      ),
-    );
-  }
-
-  Future<double> calculateDistance(LatLng origin, LatLng destination,
-      {List<LatLng> waypoints = const []}) async {
-    isLoading = true;
-    notifyListeners();
-    try {
-      double totalDistance =
-          await calculatePolyline(origin, destination, waypoints);
-      notifyListeners();
-      updateCameraToPositions(origin, destination);
-      isLoading = false;
-      notifyListeners();
-      return totalDistance;
-    } catch (e) {
-      isLoading = false;
-      notifyListeners();
-      return Future.error(e);
-    }
-  }
-
   void addDestination(LatLng currentPosition) async {
-    var destinationName = await _mapService.getAddress(currentPosition);
+    var destinationName = await MapService.getAddress(currentPosition);
     destinations.add(Tuple2(destinationName, currentPosition));
     notifyListeners();
   }

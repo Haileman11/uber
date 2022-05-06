@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:driver_app/src/splash_screen.dart';
 
 import 'booked-ride/ui/trip_details_view.dart';
-import 'booked-ride/ui/trip_list_view.dart';
+import 'completed-ride/complete_ride_list_view.dart';
 
 /// The Widget that configures your application.
 class MyApp extends ConsumerWidget {
