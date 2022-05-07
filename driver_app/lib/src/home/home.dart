@@ -4,8 +4,8 @@ import 'package:driver_app/src/completed-ride/complete_ride_list_view.dart';
 import 'package:driver_app/src/booking-request/booking_request_view.dart';
 import 'package:driver_app/src/completed-ride/complete_ride_view.dart';
 import 'package:driver_app/src/home/go.dart';
-import 'package:driver_app/src/home/profile.dart';
 import 'package:driver_app/src/map/map_controller.dart';
+import 'package:driver_app/src/profile/profile_view.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +22,7 @@ class _HomeState extends ConsumerState<Home> {
   PageController pageController = PageController();
   var gotTab = GoTab();
   var placesTab = TripListView();
-  var profileTab = Profile();
+  var profileTab = ProfileView();
   @override
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);

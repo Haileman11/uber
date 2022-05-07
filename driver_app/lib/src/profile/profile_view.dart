@@ -3,21 +3,22 @@ import 'package:common/authentication/view/login.dart';
 import 'package:common/settings/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'profile_controller.dart';
 
-class Profile extends ConsumerStatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+class ProfileView extends ConsumerStatefulWidget {
+  const ProfileView({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<Profile> createState() => _ProfileState();
+  ConsumerState<ProfileView> createState() => _ProfileState();
 }
 
-class _ProfileState extends ConsumerState<Profile> {
+class _ProfileState extends ConsumerState<ProfileView> {
   @override
   Widget build(BuildContext context) {
+    final profileController = ref.read(profileProvider);
     return Scaffold(
       appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
+        title: Text("Profile"),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -30,6 +31,9 @@ class _ProfileState extends ConsumerState<Profile> {
       body: SingleChildScrollView(
           child: Column(
         children: [
+          SizedBox(
+            height: 16.0,
+          ),
           CircleAvatar(
             radius: 50.0,
             backgroundImage: NetworkImage("https://picsum.photos/200/300"),
@@ -40,14 +44,16 @@ class _ProfileState extends ConsumerState<Profile> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("Driver man", style: Theme.of(context).textTheme.headline6),
+              Text(
+                  "${profileController.profile!.firstName} ${profileController.profile!.lastName}",
+                  style: Theme.of(context).textTheme.headline6),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                "+251 911909090",
+                "${profileController.profile!.userName}",
               ),
             ],
           ),

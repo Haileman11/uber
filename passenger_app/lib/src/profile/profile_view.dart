@@ -3,17 +3,19 @@ import 'package:common/authentication/view/login.dart';
 import 'package:common/settings/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:passenger_app/src/profile/profile_controller.dart';
 
-class Profile extends ConsumerStatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+class ProfileView extends ConsumerStatefulWidget {
+  const ProfileView({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<Profile> createState() => _ProfileState();
+  ConsumerState<ProfileView> createState() => _ProfileState();
 }
 
-class _ProfileState extends ConsumerState<Profile> {
+class _ProfileState extends ConsumerState<ProfileView> {
   @override
   Widget build(BuildContext context) {
+    final profileController = ref.read(profileProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text("Profile"),
@@ -42,7 +44,8 @@ class _ProfileState extends ConsumerState<Profile> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text("Passenger man",
+              Text(
+                  "${profileController.profile!.firstName} ${profileController.profile!.lastName}",
                   style: Theme.of(context).textTheme.headline6),
             ],
           ),
@@ -50,7 +53,7 @@ class _ProfileState extends ConsumerState<Profile> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                "+251 911909090",
+                "${profileController.profile!.userName}",
               ),
             ],
           ),

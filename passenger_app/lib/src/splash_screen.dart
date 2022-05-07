@@ -6,6 +6,7 @@ import 'package:common/shared_preferences_service.dart';
 import 'package:passenger_app/src/home/home.dart';
 import 'package:passenger_app/src/services/top_level_providers.dart';
 import 'home/go.dart';
+import 'profile/profile_controller.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -81,6 +82,10 @@ class SplashScreenState extends ConsumerState<SplashScreen> {
         return const Login();
       });
     }
-    return const Home();
+    return FutureBuilder(
+        future: ref.read(profileProvider).getUserProfile(),
+        builder: (context, snapshot) {
+          return const Home();
+        });
   }
 }

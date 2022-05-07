@@ -1,4 +1,5 @@
 import 'package:common/authentication/view/login.dart';
+import 'package:driver_app/src/profile/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/shared_preferences_service.dart';
@@ -84,6 +85,10 @@ class SplashScreenState extends ConsumerState<SplashScreen> {
         return const Login();
       });
     }
-    return const Home();
+    return FutureBuilder(
+        future: ref.read(profileProvider).getUserProfile(),
+        builder: (context, snapshot) {
+          return const Home();
+        });
   }
 }
