@@ -55,7 +55,17 @@ class MyApp extends ConsumerWidget {
       // Define a light and dark color theme. Then, read the user's
       // preferred ThemeMode (light, dark, or system default) from the
       // SettingsController to display the correct theme.
-      theme: ThemeData(),
+      theme: ThemeData(
+        // primaryColor: Color.fromARGB(255, 255, 166, 0),
+        // primaryColorDark: Colors.yellow[800],
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          ),
+        ),
+        // colorScheme: ColorScheme.fromSwatch()
+        //     .copyWith(secondary: Colors.black, primary: Colors.yellow[800])
+      ),
       darkTheme: ThemeData.dark(),
       themeMode: ref.watch(settingsProvider).themeMode,
       navigatorKey: ref.watch(navigationProvider).navigatorKey,

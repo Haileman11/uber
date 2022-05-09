@@ -10,52 +10,41 @@ class Register extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: _theme.scaffoldBackgroundColor,
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        actions: <Widget>[
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: 25.0),
-              child:
-                  Text("Log In", style: Theme.of(context).textTheme.headline6),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height - 100.0,
-          padding: EdgeInsets.all(15.0),
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
-                      child: Text(
-                        "Sign Up",
-                        style: _theme.textTheme.headline6!.copyWith(
-                          fontSize: 30.0,
-                        ),
-                      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: Text(
+                    "Sign Up",
+                    style: _theme.textTheme.headline6!.copyWith(
+                      fontSize: 30.0,
                     ),
-                    SizedBox(
-                      height: 30.0,
-                    ),
-                    SignupForm(),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(
+                  height: 30.0,
+                ),
+                SignupForm(),
+                SizedBox(
+                  height: 30,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Already have an account?"),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text("Log in"))
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -80,7 +69,11 @@ class _SignupFormState extends State<SignupForm> {
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   late String phoneNumber;
+
+  bool loginPassObscureText = true;
+  bool signupConfirmPassObscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -92,23 +85,24 @@ class _SignupFormState extends State<SignupForm> {
             children: <Widget>[
               Expanded(
                 child: TextFormField(
-                    controller: firstNameController,
-                    decoration: InputDecoration(
-                      labelText: "First name",
-                    )),
+                  controller: firstNameController,
+                  decoration: InputDecoration(
+                    labelText: "First name",
+                  ),
+                  textInputAction: TextInputAction.next,
+                ),
               ),
               SizedBox(width: 15.0),
               Expanded(
                 child: TextFormField(
-                    controller: lastNameController,
-                    decoration: InputDecoration(
-                      labelText: "Last name",
-                    )),
+                  controller: lastNameController,
+                  decoration: InputDecoration(
+                    labelText: "Last name",
+                  ),
+                  textInputAction: TextInputAction.next,
+                ),
               )
             ],
-          ),
-          const SizedBox(
-            height: 20.0,
           ),
           const SizedBox(
             height: 20.0,
@@ -124,6 +118,9 @@ class _SignupFormState extends State<SignupForm> {
               selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
             ),
             ignoreBlank: false,
+            inputDecoration: InputDecoration(
+                labelText: "Phone number",
+                border: Theme.of(context).inputDecorationTheme.border),
             // inputDecoration: InputDecoration(
             //     labelText: AppLocalizations.of(context)
             //         .translate('hint_mobile_no')),
@@ -142,13 +139,52 @@ class _SignupFormState extends State<SignupForm> {
             height: 20.0,
           ),
           TextFormField(
-              controller: passwordController,
-              decoration: InputDecoration(
-                labelText: "Password",
-              )),
-          SizedBox(
-            height: 25.0,
+            obscureText: loginPassObscureText,
+            controller: passwordController,
+            decoration: InputDecoration(
+              labelText: "Password",
+              suffixIcon: Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  onPressed: () {
+                    loginPassObscureText = !loginPassObscureText;
+                    setState(() {});
+                  },
+                  icon: Icon(!loginPassObscureText
+                      ? Icons.visibility
+                      : Icons.visibility_off),
+                ),
+              ),
+            ),
+            textInputAction: TextInputAction.next,
+            validator: (s) => passwordValidator(s, context),
           ),
+          SizedBox(
+            height: 20.0,
+          ),
+          TextFormField(
+            controller: confirmPasswordController,
+            obscureText: signupConfirmPassObscureText,
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+                labelText: 'Confirm password',
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: IconButton(
+                    onPressed: () {
+                      signupConfirmPassObscureText =
+                          !signupConfirmPassObscureText;
+                      setState(() {});
+                    },
+                    icon: Icon(!signupConfirmPassObscureText
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                  ),
+                )),
+            validator: (s) =>
+                confirmPasswordValidator(s, context, passwordController),
+          ),
+          const SizedBox(height: 20.0),
           Text(
             "By clicking \"Sign Up\" you agree to our terms and conditions as well as our pricacy policy",
             style: TextStyle(
@@ -187,5 +223,25 @@ class _SignupFormState extends State<SignupForm> {
         ],
       ),
     );
+  }
+
+  String? passwordValidator(s, context) {
+    if (s == null || s.trim().isEmpty) {
+      return "* Field required";
+    }
+    if (s.length < 6) {
+      return 'Password must be at least characters';
+    }
+    return null;
+  }
+
+  String? confirmPasswordValidator(s, context, passwordController) {
+    if (s.trim().isEmpty) {
+      return "Field required";
+    }
+    if (s.trim() != passwordController.text) {
+      return "Password does not match";
+    }
+    return null;
   }
 }

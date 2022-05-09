@@ -12,38 +12,16 @@ class Login extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: _theme.scaffoldBackgroundColor,
-        automaticallyImplyLeading: false,
-        elevation: 0.0,
-        actions: <Widget>[
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => Register(),
-                ),
-              );
-            },
-            child: Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: 25.0),
-              child:
-                  Text("Sign Up", style: Theme.of(context).textTheme.headline6),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: <Widget>[
-            Column(
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  alignment: Alignment.center,
                   child: Text(
                     "Log In",
                     style: _theme.textTheme.headline6!.copyWith(
@@ -54,10 +32,26 @@ class Login extends StatelessWidget {
                 const SizedBox(
                   height: 30.0,
                 ),
-                LoginForm()
+                LoginForm(),
+                const SizedBox(
+                  height: 30,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Don't have an account?"),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => Register(),
+                              ),
+                            ),
+                        child: Text("Sign up"))
+                  ],
+                )
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -75,6 +69,8 @@ class _LoginFormState extends State<LoginForm> {
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   late String phoneNumber;
+
+  bool loginPassObscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -94,9 +90,9 @@ class _LoginFormState extends State<LoginForm> {
               selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
             ),
             ignoreBlank: false,
-            // inputDecoration: InputDecoration(
-            //     labelText: AppLocalizations.of(context)
-            //         .translate('hint_mobile_no')),
+            inputDecoration: InputDecoration(
+                labelText: "Phone number",
+                border: Theme.of(context).inputDecorationTheme.border),
             textFieldController: phoneController,
             autoValidateMode: AutovalidateMode.onUserInteraction,
             selectorTextStyle: Theme.of(context).textTheme.bodyText1,
@@ -112,10 +108,24 @@ class _LoginFormState extends State<LoginForm> {
             height: 20.0,
           ),
           TextFormField(
+            obscureText: loginPassObscureText,
             controller: passwordController,
             decoration: InputDecoration(
               labelText: "Password",
+              suffixIcon: Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  onTap: () {
+                    loginPassObscureText = !loginPassObscureText;
+                    setState(() {});
+                  },
+                  child: Icon(!loginPassObscureText
+                      ? Icons.visibility
+                      : Icons.visibility_off),
+                ),
+              ),
             ),
+            validator: (s) => passwordValidator(s, context),
           ),
           SizedBox(
             height: 20.0,
@@ -157,5 +167,15 @@ class _LoginFormState extends State<LoginForm> {
         ],
       ),
     );
+  }
+
+  String? passwordValidator(s, context) {
+    if (s == null || s.trim().isEmpty) {
+      return "* Field required";
+    }
+    if (s.length < 6) {
+      return 'Password must be at least characters';
+    }
+    return null;
   }
 }
