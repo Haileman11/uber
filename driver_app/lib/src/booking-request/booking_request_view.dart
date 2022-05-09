@@ -1,4 +1,4 @@
-import 'package:driver_app/src/booked-ride/ui/booked_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
 import 'package:driver_app/src/map/map_view.dart';
 import 'package:driver_app/src/services/location_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
@@ -105,7 +105,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                                     .acceptBookingRequest(true)) ;
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
-                                      builder: (_) => BookedRideView()),
+                                      builder: (_) => OngoingRideView()),
                                 );
                               },
                               child: const Text("Accept")),

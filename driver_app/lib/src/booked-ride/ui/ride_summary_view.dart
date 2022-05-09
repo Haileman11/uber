@@ -1,21 +1,21 @@
 import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
-import 'package:driver_app/src/booked-ride/ui/booked_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
 import 'package:driver_app/src/map/map_view.dart';
 import 'package:driver_app/src/services/location_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CompleteRideView extends ConsumerStatefulWidget {
-  const CompleteRideView({
+class RideSummaryView extends ConsumerStatefulWidget {
+  const RideSummaryView({
     Key? key,
   }) : super(key: key);
 
   @override
-  ConsumerState<CompleteRideView> createState() => _BookingRequestViewState();
+  ConsumerState<RideSummaryView> createState() => _BookingRequestViewState();
 }
 
-class _BookingRequestViewState extends ConsumerState<CompleteRideView> {
+class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
   @override
   Widget build(BuildContext context) {
     final bookedRideController = ref.watch(bookedRideProvider);

@@ -3,7 +3,7 @@ import 'package:common/dio_client.dart';
 import 'package:common/services/navigator_service.dart';
 import 'package:common/services/notification_service.dart';
 import 'package:driver_app/src/booked-ride/booked_ride.dart';
-import 'package:driver_app/src/booked-ride/ui/booked_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
 import 'package:driver_app/src/booking-request/booking_request_view.dart';
 import 'package:driver_app/src/map/map_controller.dart';
 import 'package:driver_app/src/map/map_service.dart';

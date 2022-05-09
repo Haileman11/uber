@@ -6,6 +6,7 @@ class BookedRideService {
   /// Persists the user's preferred ThemeMode to local or remote storage.
   late DioClient _dioClient;
   static const completeTripUrl = "Request/complete-trip";
+  static const getBookedRidesUrl = "Request/get-booked-rides";
   BookedRideService(this._dioClient);
 
   Future<BookedRide> completeTrip(
@@ -24,6 +25,20 @@ class BookedRideService {
     } catch (e) {
       print(e);
       return Future.error(e);
+    }
+  }
+
+  Future<List<BookedRide>?> getBookedRides() async {
+    try {
+      Response response = await _dioClient.dio.get(getBookedRidesUrl,
+          options: Options(headers: {'requiresToken': true}));
+      var bookedRidesJson = response.data;
+      List<BookedRide> bookedRides = bookedRidesJson
+          .map<BookedRide>((json) => BookedRide.fromJson(json))
+          .toList();
+      return bookedRides;
+    } catch (e) {
+      return null;
     }
   }
 }

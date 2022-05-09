@@ -15,7 +15,10 @@ class ProfileService {
       return response.data;
     } on DioError catch (e) {
       print(e);
-      return null;
+      if (e.response!.statusCode == 401) {
+        return null;
+      }
+      rethrow;
     } catch (e) {
       rethrow;
     }

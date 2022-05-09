@@ -1,6 +1,6 @@
 import 'package:common/ui/loadingIndicator.dart';
 import 'package:driver_app/src/booked-ride/booked_ride.dart';
-import 'package:driver_app/src/completed-ride/complete_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/ride_summary_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -13,14 +13,14 @@ import 'package:driver_app/src/map/map_service.dart';
 import 'package:driver_app/src/map/map_view.dart';
 import 'package:driver_app/src/services/location_service.dart';
 
-class BookedRideView extends ConsumerStatefulWidget {
-  const BookedRideView({Key? key}) : super(key: key);
+class OngoingRideView extends ConsumerStatefulWidget {
+  const OngoingRideView({Key? key}) : super(key: key);
 
   @override
   _HomepageState createState() => _HomepageState();
 }
 
-class _HomepageState extends ConsumerState<BookedRideView> {
+class _HomepageState extends ConsumerState<OngoingRideView> {
   String? currentAddress;
 
   var pageController = PageController();

@@ -12,12 +12,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tuple/tuple.dart';
 import 'booked_ride_service.dart';
-import 'ui/booked_ride_view.dart';
+import 'ui/ongoing_ride_view.dart';
 
 class BookedRideController with ChangeNotifier {
   final BookedRideService _bookedRideService;
 
   LocationService locationService;
+  List<BookedRide>? bookedRides;
 
   BookedRide? bookedRide;
   BookedRide? completeRide;
@@ -101,6 +102,12 @@ class BookedRideController with ChangeNotifier {
 
   void clearPolylines() {
     polylines.clear();
+    notifyListeners();
+  }
+
+  Future<void> getBookedRides() async {
+    bookedRides = await _bookedRideService.getBookedRides();
+
     notifyListeners();
   }
 }

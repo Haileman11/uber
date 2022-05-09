@@ -1,8 +1,8 @@
 import 'package:common/ui/keep_alive.dart';
 import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
-import 'package:driver_app/src/completed-ride/complete_ride_list_view.dart';
+import 'package:driver_app/src/booked-ride/ui/booked_ride_list_view.dart';
 import 'package:driver_app/src/booking-request/booking_request_view.dart';
-import 'package:driver_app/src/completed-ride/complete_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/ride_summary_view.dart';
 import 'package:driver_app/src/home/go.dart';
 import 'package:driver_app/src/map/map_controller.dart';
 import 'package:driver_app/src/profile/profile_view.dart';
@@ -21,7 +21,7 @@ class _HomeState extends ConsumerState<Home> {
   int currentTab = 0;
   PageController pageController = PageController();
   var gotTab = GoTab();
-  var placesTab = TripListView();
+  var placesTab = CompleteRideListView();
   var profileTab = ProfileView();
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class _HomeState extends ConsumerState<Home> {
     ref.listen<BookedRideController>(bookedRideProvider, (previous, current) {
       if (current.completeRide != null) {
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => CompleteRideView()));
+            MaterialPageRoute(builder: (_) => RideSummaryView()));
       }
     });
 

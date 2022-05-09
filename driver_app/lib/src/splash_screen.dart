@@ -1,4 +1,5 @@
 import 'package:common/authentication/view/login.dart';
+import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
 import 'package:driver_app/src/profile/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +87,10 @@ class SplashScreenState extends ConsumerState<SplashScreen> {
       });
     }
     return FutureBuilder(
-        future: ref.read(profileProvider).getUserProfile(),
+        future: Future.wait([
+          ref.read(profileProvider).getUserProfile(),
+          ref.read(bookedRideProvider).getBookedRides()
+        ]),
         builder: (context, snapshot) {
           return const Home();
         });

@@ -323,38 +323,4 @@ class _HomepageState extends ConsumerState<BookingRequestView> {
       ),
     );
   }
-
-  Widget rideComplete(BuildContext context) {
-    final mapController = ref.watch(mapProvider);
-    final bookedRideController = ref.watch(bookedRideProvider);
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-      child: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            const SizedBox(
-              height: 10.0,
-            ),
-            Column(
-              children: [
-                Center(child: Text("You have reached your destination")),
-                SizedBox(
-                  height: 15.0,
-                ),
-                Center(child: CircularProgressIndicator.adaptive()),
-                Center(
-                    child: Text(
-                        "Your bill is ${bookedRideController.completeRide!.price} ETB.")),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
 }

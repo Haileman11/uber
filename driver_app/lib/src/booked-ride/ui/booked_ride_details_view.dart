@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 class TripDetailsView extends StatelessWidget {
   const TripDetailsView({Key? key}) : super(key: key);
 
-  static const routeName = '/sample_item';
+  static const routeName = '/booked-rides/';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Item Details'),
+        title: const Text('Booked Ride Details'),
       ),
       body: const Center(
         child: Text('More Information Here'),
