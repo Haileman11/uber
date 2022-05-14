@@ -33,10 +33,11 @@ class BookedRideService {
       Response response = await _dioClient.dio.get(getBookedRidesUrl,
           options: Options(headers: {'requiresToken': true}));
       var bookedRidesJson = response.data;
-      List<BookedRide> bookedRides = bookedRidesJson
-          .map<BookedRide>((json) => BookedRide.fromJson(json))
-          .toList();
-      return bookedRides;
+      // List<BookedRide> bookedRides = bookedRidesJson
+      //     .map<BookedRide>((json) => BookedRide.fromJson(json))
+      //     .toList();
+      // return bookedRides;
+      return [];
     } catch (e) {
       return null;
     }

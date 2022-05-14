@@ -110,6 +110,8 @@ class BookedRideController with ChangeNotifier {
 
     notifyListeners();
   }
+
+  cancelRide() {}
 }
 
 final bookedRideProvider = ChangeNotifierProvider(((ref) {

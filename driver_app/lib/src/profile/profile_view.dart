@@ -7,7 +7,7 @@ import 'profile_controller.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({Key? key}) : super(key: key);
-
+  static const routeName = '/profile';
   @override
   ConsumerState<ProfileView> createState() => _ProfileState();
 }

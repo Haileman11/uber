@@ -25,19 +25,21 @@ class GoTab extends ConsumerStatefulWidget {
 class _HomepageState extends ConsumerState<GoTab> {
   String? currentAddress;
 
-  var pageController = PageController();
-
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async {
       myLocation = await ref.read(locationProvider).getMyLocation();
+      _originController.text = await MapService.getAddress(myLocation!);
+      ref.read(bookingRequestProvider).origin =
+          Tuple2(_originController.text, myLocation!);
     });
   }
 
   LatLng? myLocation;
 
+  final _originController = TextEditingController();
   final _destinationController = TextEditingController();
 
   @override
@@ -47,6 +49,7 @@ class _HomepageState extends ConsumerState<GoTab> {
     final mapController = ref.watch(mapProvider);
 
     return Scaffold(
+      bottomSheet: setupLocation(context),
       body: SafeArea(
         child: Stack(
           children: <Widget>[
@@ -96,113 +99,218 @@ class _HomepageState extends ConsumerState<GoTab> {
               }
             }),
 
-            Positioned(
-              left: 0,
-              top: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Card(
-                      child: AppBar(
-                        backgroundColor: _theme.backgroundColor,
-                        elevation: 0.0,
-                        // leading: IconButton(
-                        //   onPressed: () {
-                        //     _scaffoldKey.currentState!.openDrawer();
-                        //   },
-                        //   icon: const Icon(
-                        //     Icons.menu,
-                        //   ),
-                        // ),
-                        title: InkWell(
-                          onTap: () async {
-                            LatLng? selectedLocation;
-                            await showSearch(
-                                context: context, delegate: DataSearch());
-                            if (selectedLocation != null) {
-                              // setState(() {
-                              //   mapController.destinations.add( selectedLocation);
-                              // });
-                            }
-                          },
-                          child: TextField(
-                            enabled: false,
-                            decoration: InputDecoration(
-                              hintText: "Where to?",
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            controller: _destinationController,
-                          ),
-                        ),
-                        actions: [
-                          IconButton(
-                            onPressed: () => placePickerHandler(
-                                mapController, locationController),
-                            icon: const Icon(
-                              Icons.location_on_sharp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ChoiceChip(
-                            label: const Text("Work"),
-                            onSelected: (val) {},
-                            selected: false,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ChoiceChip(
-                            label: const Text("Home"),
-                            onSelected: (val) {},
-                            selected: false,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ChoiceChip(
-                            label: const Text("Gym"),
-                            onSelected: (val) {},
-                            selected: false,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // showLocationBottomSheet(mapController, context)
+            // Positioned(
+            //   left: 0,
+            //   top: 0,
+            //   right: 0,
+            //   child: Container(
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(
+            //       children: [
+            //         Card(
+            //           child: AppBar(
+            //             backgroundColor: _theme.backgroundColor,
+            //             elevation: 0.0,
+            //             // leading: IconButton(
+            //             //   onPressed: () {
+            //             //     _scaffoldKey.currentState!.openDrawer();
+            //             //   },
+            //             //   icon: const Icon(
+            //             //     Icons.menu,
+            //             //   ),
+            //             // ),
+            //             title: InkWell(
+            //               onTap: () async {
+            //                 LatLng? selectedLocation;
+            //                 await showSearch(
+            //                     context: context, delegate: DataSearch());
+            //                 if (selectedLocation != null) {
+            //                   // setState(() {
+            //                   //   mapController.destinations.add( selectedLocation);
+            //                   // });
+            //                 }
+            //               },
+            //               child: TextField(
+            //                 enabled: false,
+            //                 decoration: InputDecoration(
+            //                   hintText: "Where to?",
+            //                   prefixIcon: Icon(Icons.search),
+            //                   border: OutlineInputBorder(
+            //                     borderSide: BorderSide.none,
+            //                   ),
+            //                 ),
+            //                 controller: _destinationController,
+            //               ),
+            //             ),
+            //             actions: [
+            //               IconButton(
+            //                 onPressed: () => placePickerHandler(
+            //                     mapController, locationController),
+            //                 icon: const Icon(
+            //                   Icons.location_on_sharp,
+            //                 ),
+            //               ),
+            //             ],
+            //           ),
+            //         ),
+            //         Row(
+            //           crossAxisAlignment: CrossAxisAlignment.center,
+            //           mainAxisAlignment: MainAxisAlignment.center,
+            //           children: <Widget>[
+            //             Padding(
+            //               padding: const EdgeInsets.all(8.0),
+            //               child: ChoiceChip(
+            //                 label: const Text("Work"),
+            //                 onSelected: (val) {},
+            //                 selected: false,
+            //               ),
+            //             ),
+            //             Padding(
+            //               padding: const EdgeInsets.all(8.0),
+            //               child: ChoiceChip(
+            //                 label: const Text("Home"),
+            //                 onSelected: (val) {},
+            //                 selected: false,
+            //               ),
+            //             ),
+            //             Padding(
+            //               padding: const EdgeInsets.all(8.0),
+            //               child: ChoiceChip(
+            //                 label: const Text("Gym"),
+            //                 onSelected: (val) {},
+            //                 selected: false,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
     );
   }
 
-  void placePickerHandler(
+  Widget setupLocation(BuildContext context) {
+    final bookingRequestController = ref.watch(bookingRequestProvider);
+    final locationController = ref.watch(locationProvider);
+    final mapController = ref.watch(mapProvider);
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const SizedBox(
+              height: 10.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "Select location",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            TextFormField(
+              controller: _originController,
+              decoration: InputDecoration(
+                labelText: "From",
+                suffixIcon: IconButton(
+                  onPressed: () async {
+                    var selectedLocation = await placePickerHandler(
+                        mapController, locationController);
+                    if (selectedLocation != null) {
+                      _originController.text = selectedLocation.item1;
+                      bookingRequestController.origin = selectedLocation;
+                      MapService.updateCameraToPositions(
+                          bookingRequestController.origin!.item2,
+                          bookingRequestController.destinations.first.item2,
+                          mapController.controller);
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.location_searching,
+                  ),
+                ),
+              ),
+              focusNode: AlwaysDisabledFocusNode(),
+            ),
+            const SizedBox(
+              height: 15.0,
+            ),
+            TextFormField(
+              focusNode: AlwaysDisabledFocusNode(),
+              decoration: InputDecoration(
+                labelText: "Where to",
+                suffixIcon: IconButton(
+                  onPressed: () async {
+                    var selectedLocation = await placePickerHandler(
+                        mapController, locationController);
+                    if (selectedLocation != null) {
+                      _destinationController.text = selectedLocation.item1;
+                      bookingRequestController.addDestination(
+                        selectedLocation,
+                      );
+                      MapService.updateCameraToPositions(
+                          bookingRequestController.origin!.item2,
+                          selectedLocation.item2,
+                          mapController.controller);
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.location_searching,
+                  ),
+                ),
+              ),
+              controller: _destinationController,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: ElevatedButton(
+                onPressed: (myLocation != null &&
+                        bookingRequestController.destinations.isNotEmpty &&
+                        !bookingRequestController.isLoading)
+                    ? () async {
+                        await bookingRequestController.calculateDistance(
+                          myLocation!,
+                          bookingRequestController.destinations.first.item2,
+                        );
+
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => BookingRequestView()));
+                      }
+                    : null,
+                child: (bookingRequestController.isLoading)
+                    ? CircularProgressIndicator.adaptive()
+                    : const Text("Next"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<Tuple2<String, LatLng>?> placePickerHandler(
       MapController mapController, LocationService locationController) async {
     Tuple2<String, LatLng>? selectedLocation = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => PlacePicker()));
-    if (selectedLocation != null) {
-      ref.read(bookingRequestProvider).addDestination(
-            selectedLocation,
-          );
-
-      await Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => BookingRequestView()));
-    }
+    return selectedLocation;
+    // if (selectedLocation != null) {
+    // ref.read(bookingRequestProvider).addDestination(
+    //       selectedLocation,
+    //     );
+    // return selectedLocation;
+    // }
   }
+}
+
+class AlwaysDisabledFocusNode extends FocusNode {
+  @override
+  bool get hasFocus => false;
 }

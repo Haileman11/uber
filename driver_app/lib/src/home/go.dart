@@ -40,6 +40,72 @@ class _HomepageState extends ConsumerState<GoTab> {
     final mapController = ref.watch(mapProvider);
 
     return Scaffold(
+      bottomSheet: Container(
+        padding: const EdgeInsets.all(8.0),
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.3),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const SizedBox(
+              height: 10.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                mapController.circles.isEmpty
+                    ? "You're Offline"
+                    : "You're Online",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            const SizedBox(
+              height: 15.0,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      Text(
+                        "78.0%",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        "Acceptance",
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        "4.75",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        "Rating",
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        "5.0%",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        "Cancellation",
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
           child: Text(mapController.circles.isEmpty ? "Go" : "Stop"),
@@ -64,22 +130,14 @@ class _HomepageState extends ConsumerState<GoTab> {
                   ),
                 );
               } else if (locationController.serviceEnabled!) {
-                return CustomScrollView(
-                    physics: NeverScrollableScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Container(
-                          constraints: BoxConstraints(
-                              maxHeight: mapController.destinations.isEmpty
-                                  ? MediaQuery.of(context).size.height
-                                  : MediaQuery.of(context).size.height * 0.6),
-                          child: MapView(
-                              myLocation: locationController.myLocation,
-                              polylines: mapController.polylines,
-                              markers: mapController.markers),
-                        ),
-                      ),
-                    ]);
+                return Container(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.70),
+                  child: MapView(
+                      myLocation: locationController.myLocation,
+                      polylines: mapController.polylines,
+                      markers: mapController.markers),
+                );
               } else {
                 return Container(
                   alignment: Alignment.center,
@@ -106,6 +164,11 @@ class _HomepageState extends ConsumerState<GoTab> {
                 );
               }
             }),
+            IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: Icon(Icons.menu))
           ],
         ),
       ),

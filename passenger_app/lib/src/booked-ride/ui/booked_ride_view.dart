@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:passenger_app/src/booked-ride/booked_ride_controller.dart';
 import 'package:passenger_app/src/booking-request/booking_request_controller.dart';
 import 'package:passenger_app/src/booking-request/ui/place_picker.dart';
+import 'package:passenger_app/src/home/go.dart';
 import 'package:passenger_app/src/map/map_controller.dart';
 import 'package:passenger_app/src/map/map_service.dart';
 
@@ -60,12 +61,7 @@ class _HomepageState extends ConsumerState<BookedRideView> {
                       ? loadingIndicator
                       : PageView(
                           controller: pageController,
-                          children: [
-                            setupLocation(context),
-                            if (bookingRequestController.bookingRequest != null)
-                              completeOrder(context),
-                            waitingForDriver(context)
-                          ],
+                          children: [waitingForDriver(context)],
                         ),
                 );
               },
@@ -133,139 +129,6 @@ class _HomepageState extends ConsumerState<BookedRideView> {
     );
   }
 
-  Widget setupLocation(BuildContext context) {
-    final bookingRequestController = ref.watch(bookingRequestProvider);
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const SizedBox(
-              height: 10.0,
-            ),
-            const Card(
-              child: ListTile(
-                title: Text("My Location"),
-              ),
-            ),
-            const SizedBox(
-              height: 15.0,
-            ),
-            ...bookingRequestController.destinations.map(((e) => Card(
-                    child: ListTile(
-                  title: Text(e.item1),
-                )))),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: ElevatedButton(
-                onPressed: (myLocation != null &&
-                        bookingRequestController.destinations.isNotEmpty &&
-                        !bookingRequestController.isLoading)
-                    ? () async {
-                        await bookingRequestController.calculateDistance(
-                          myLocation!,
-                          bookingRequestController.destinations.first.item2,
-                        );
-                        pageController.nextPage(
-                            duration: Duration(milliseconds: 500),
-                            curve: Curves.easeInCubic);
-                      }
-                    : null,
-                child: (bookingRequestController.isLoading)
-                    ? CircularProgressIndicator.adaptive()
-                    : const Text("Next"),
-              ),
-            ),
-            TextButton(
-                onPressed: () => bookingRequestController.clearDestinations(),
-                child: Text("Cancel")),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget completeOrder(BuildContext context) {
-    final mapController = ref.watch(mapProvider);
-    final bookingRequestController = ref.watch(bookingRequestProvider);
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const SizedBox(
-              height: 10.0,
-            ),
-            Text("Select a car"),
-            const SizedBox(
-              height: 15.0,
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                ...bookingRequestController.bookingRequest!.price
-                    .map(((package) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ChoiceChip(
-                            visualDensity: VisualDensity.comfortable,
-                            label: Column(
-                              children: [
-                                Text(package.packageName),
-                                Text("${package.price.toStringAsFixed(0)} ETB"),
-                              ],
-                            ),
-                            onSelected: (val) {},
-                            selected: false,
-                          ),
-                        )))
-              ],
-            ),
-            Text(
-              "${bookingRequestController.bookingRequest!.distance.toStringAsFixed(0)} meters",
-              style: Theme.of(context).textTheme.headline6,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: ElevatedButton(
-                  onPressed: (myLocation != null &&
-                          bookingRequestController.destinations.isNotEmpty &&
-                          !bookingRequestController.isLoading)
-                      ? () {
-                          // ref.read(bookingRequestProvider).bookTrip(
-                          //     mapController.polylines.keys.first.value,
-                          //     "regular");
-                          // pageController.nextPage(
-                          //     duration: Duration(milliseconds: 500),
-                          //     curve: Curves.easeInCubic);
-                        }
-                      : null,
-                  child: bookingRequestController.isLoading
-                      ? CircularProgressIndicator.adaptive()
-                      : const Text("Order now")),
-            ),
-            TextButton(
-                onPressed: () {
-                  // mapController.clearPolylines();
-                  // pageController.previousPage(
-                  //     duration: Duration(milliseconds: 500),
-                  //     curve: Curves.easeInCubic);
-                },
-                child: Text("Back")),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget waitingForDriver(BuildContext context) {
     final mapController = ref.watch(mapProvider);
     final bookedRideController = ref.watch(bookedRideProvider);
@@ -302,6 +165,24 @@ class _HomepageState extends ConsumerState<BookedRideView> {
                           child: ListTile(
                               title: Text(bookedRideController
                                   .ongoingRide!.licensePlate!))),
+                      // TextFormField(
+                      //   decoration: InputDecoration(
+                      //     labelText: "From",
+                      //   ),
+                      //   focusNode: AlwaysDisabledFocusNode(),
+                      //   initialValue: bookedRideController
+                      //             .ongoingRide!. ,
+                      // ),
+                      // const SizedBox(
+                      //   height: 15.0,
+                      // ),
+                      // TextFormField(
+                      //   focusNode: AlwaysDisabledFocusNode(),
+                      //   decoration: InputDecoration(
+                      //     labelText: "To",
+                      //   ),
+                      //   controller: _destinationController,
+                      // ),
                     ],
                   )
           ],

@@ -73,6 +73,7 @@ class MapState extends ConsumerState<MapView> with WidgetsBindingObserver {
           widget.setController!(controller);
           ref.read(mapProvider).addMapStyleListner(controller);
         } else {
+          ref.read(mapProvider).controller = controller;
           ref
               .read(mapProvider)
               .setMapStyle(controller, ref.read(settingsProvider).themeMode);

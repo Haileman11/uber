@@ -1,191 +1,119 @@
 import 'package:common/authentication/authentication_controller.dart';
 import 'package:common/authentication/view/login.dart';
 import 'package:common/settings/settings_view.dart';
+import 'package:passenger_app/src/places/place_list_view.dart';
+import 'package:passenger_app/src/profile/profile_view.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
+import 'package:passenger_app/src/profile/profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final List _drawerMenu = [
-      {
-        "icon": Icons.login,
-        "text": "Log in",
-        "route": Login(),
-      },
-      // {
-      //   "icon": Icons.restore,
-      //   "text": "My rides",
-      //   "route": MyRidesRoute,
-      // },
-      // {
-      //   "icon": Icons.local_activity,
-      //   "text": "Promotions",
-      //   "route": PromotionRoute
-      // },
-      // {
-      //   "icon": Icons.star_border,
-      //   "text": "My favourites",
-      //   "route": FavoritesRoute
-      // },
-      // {
-      //   "icon": Icons.credit_card,
-      //   "text": "My payments",
-      //   "route": PaymentRoute,
-      // },
-      // {
-      //   "icon": Icons.notifications,
-      //   "text": "Notification",
-      // },
-      // {
-      //   "icon": Icons.chat,
-      //   "text": "Support",
-      //   "route": ChatRiderRoute,
-      // }
-    ];
-
-    return Drawer(
-      child: Consumer(builder: (context, watch, child) {
-        // SharedPrefs sharedPrefs = watch(sharedPreferencesProvider);
-        return Column(
-          children: <Widget>[
-            // Padding(
-            //   padding: const EdgeInsets.fromLTRB(16, 56, 16, 16),
-            //   child: CircleAvatar(
-            //     radius: 50.0,
-            //     backgroundColor: Colors.transparent,
-            //     backgroundImage: student != null &&
-            //             student.profilePicture != null &&
-            //             student.profilePicture != ""
-            //         ? CachedNetworkImageProvider(
-            //             student.profilePicture,
-            //           )
-            //         : const AssetImage("assets/images/user.png"),
-            //   ),
-            // ),
-            // if (sharedPrefs.isLoggedIn && student != null)
-            //   Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: Text(
-            //       "${student.firstName} ${student.lastName}",
-            //       style: Theme.of(context).textTheme.headline6,
-            //     ),
-            //   ),
-            // if (sharedPrefs.isLoggedIn)
-            //   Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: MaterialButton(
-            //       onPressed: () {
-            //         Navigator.of(context).push(MaterialPageRoute(
-            //             builder: (BuildContext context) => ProfileScreen()));
-            //       },
-            //       child: Text(
-            //           AppLocalizations.of(context).translate('label_profile')),
-            //     ),
-            //   ),
-            // if (sharedPrefs.isLoggedIn)
-            //   Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: MaterialButton(
-            //       onPressed: () {
-            //         Navigator.of(context).push(MaterialPageRoute(
-            //             builder: (BuildContext context) => FavouriteScreen()));
-            //       },
-            //       child: Text(AppLocalizations.of(context)
-            //           .translate('label_favorites')),
-            //     ),
-            //   ),
-            // if (sharedPrefs.isLoggedIn)
-            //   Align(
-            //     alignment: Alignment.bottomCenter,
-            //     child: MaterialButton(
-            //       onPressed: () {
-            //         Navigator.of(context).push(MaterialPageRoute(
-            //             builder: (BuildContext context) =>
-            //                 BankAccountsScreen()));
-            //       },
-            //       child: Text(AppLocalizations.of(context)
-            //           .translate('label_bank_accounts')),
-            //     ),
-            //   ),
-            // Align(
-            //   alignment: Alignment.bottomCenter,
-            //   child: MaterialButton(
-            //     onPressed: () {
-            //       Navigator.of(context).push(MaterialPageRoute(
-            //           builder: (BuildContext context) => SettingsScreen()));
-            //     },
-            //     child: Text(
-            //         AppLocalizations.of(context).translate('label_settings')),
-            //   ),
-            // ),
-            // Align(
-            //   alignment: Alignment.bottomCenter,
-            //   child: MaterialButton(
-            //     onPressed: !sharedPrefs.isLoggedIn
-            //         ? () {
-            //             Navigator.of(context).push(MaterialPageRoute(
-            //                 builder: (BuildContext context) =>
-            //                     const SignIn(from: 'Homepage')));
-            //           }
-            //         : () async {
-            //             if (await showLogoutConfirmDialog(context)) {
-            //               sharedPrefs.logOut();
-            //             }
-            //           },
-            //     child: Text(
-            //       AppLocalizations.of(context).translate(!sharedPrefs.isLoggedIn
-            //           ? 'label_sign_in'
-            //           : 'label_log_out'),
-            //     ),
-            //   ),
-            // )
-            const SizedBox(
-              height: 20,
-            ),
-            CircleAvatar(
-              radius: 50.0,
-              backgroundImage: NetworkImage("https://picsum.photos/200/300"),
-            ),
-            SizedBox(
-              height: 7.0,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text("Passenger man",
-                    style: Theme.of(context).textTheme.headline6),
-              ],
-            ),
-
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: MaterialButton(
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(SettingsView.routeName),
-                child: Text('Settings'),
-              ),
-            ),
-
-            Consumer(builder: (context, ref, child) {
-              var isLoggedIn = ref.watch(authenticationProvider).isLoggedIn;
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: MaterialButton(
-                  onPressed: !isLoggedIn
-                      ? () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (BuildContext context) => Login()))
-                      : () async {
-                          // if (await showLogoutConfirmDialog(context)) {
-                          ref.watch(authenticationProvider).logout();
-                        },
-                  child: Text(!isLoggedIn ? 'Log in' : 'Log out'),
+    return SafeArea(
+      child: Drawer(
+        child: Consumer(builder: (context, ref, child) {
+          final profile = ref.watch(profileProvider).profile;
+          return Column(
+            children: <Widget>[
+              Container(
+                decoration:
+                    BoxDecoration(color: Theme.of(context).primaryColor),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 50, horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: 30.0,
+                      backgroundImage:
+                          NetworkImage("https://picsum.photos/200/300"),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("${profile!.firstName} ${profile.lastName}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge!
+                                  .copyWith(color: Colors.white)),
+                          SizedBox(
+                            height: 4,
+                          ),
+                          Text(
+                              PhoneNumber(
+                                phoneNumber: profile.userName,
+                              ).toString(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            }),
-          ],
-        );
-      }),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: ListTile(
+                  onTap: () =>
+                      Navigator.of(context).pushNamed(ProfileView.routeName),
+                  leading: Icon(Icons.account_circle),
+                  title: Text('Profile'),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: ListTile(
+                  onTap: () =>
+                      Navigator.of(context).pushNamed(PlaceListView.routeName),
+                  leading: Icon(Icons.monetization_on),
+                  title: Text('Saved Places'),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: ListTile(
+                  onTap: () =>
+                      Navigator.of(context).pushNamed(SettingsView.routeName),
+                  leading: Icon(Icons.account_balance_wallet),
+                  title: Text('Balance'),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: ListTile(
+                  onTap: () =>
+                      Navigator.of(context).pushNamed(SettingsView.routeName),
+                  leading: Icon(Icons.settings),
+                  title: Text('Settings'),
+                ),
+              ),
+              Consumer(builder: (context, ref, child) {
+                var isLoggedIn = ref.watch(authenticationProvider).isLoggedIn;
+                return Align(
+                  alignment: Alignment.bottomCenter,
+                  child: ListTile(
+                    onTap: !isLoggedIn
+                        ? () => Navigator.of(context).push(MaterialPageRoute(
+                            builder: (BuildContext context) => Login()))
+                        : () async {
+                            // if (await showLogoutConfirmDialog(context)) {
+                            ref.watch(authenticationProvider).logout();
+                          },
+                    leading: Icon(Icons.logout),
+                    title: Text(!isLoggedIn ? 'Log in' : 'Log out'),
+                  ),
+                );
+              }),
+            ],
+          );
+        }),
+      ),
     );
   }
 }

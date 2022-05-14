@@ -1,6 +1,7 @@
 import 'package:common/ui/loadingIndicator.dart';
 import 'package:driver_app/src/booked-ride/booked_ride.dart';
 import 'package:driver_app/src/booked-ride/ui/ride_summary_view.dart';
+import 'package:driver_app/src/booking-request/booking_request_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -47,6 +48,7 @@ class _HomepageState extends ConsumerState<OngoingRideView> {
     final bookedRideController = ref.watch(bookedRideProvider);
 
     return Scaffold(
+      bottomSheet: ongoingRideWidget(bookedRideController, locationController),
       body: Stack(
         children: <Widget>[
           Builder(builder: (context) {
@@ -63,6 +65,12 @@ class _HomepageState extends ConsumerState<OngoingRideView> {
                         child: MapView(
                             setController: (GoogleMapController controller) {
                               bookedRideController.controller = controller;
+                              MapService.updateCameraToPositions(
+                                  bookedRideController
+                                      .bookedRide!.northeastbound,
+                                  bookedRideController
+                                      .bookedRide!.southwestbound,
+                                  controller);
                             },
                             myLocation: locationController.myLocation,
                             polylines: bookedRideController.polylines,
@@ -98,49 +106,109 @@ class _HomepageState extends ConsumerState<OngoingRideView> {
               );
             }
           }),
-          if (bookingRequestController.bookedRide != null)
-            Positioned(
-              left: 0,
-              bottom: 0,
-              right: 0,
-              child: Column(
+        ],
+      ),
+    );
+  }
+
+  Widget ongoingRideWidget(BookedRideController bookedRideController,
+      LocationService locationService) {
+    var ongoingRide = bookedRideController.bookedRide;
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton(
-                      onPressed: () {
-                        !locationController.isStreaming
-                            ? bookedRideController.startTrackingTrip()
-                            : bookedRideController.completeTrip();
-                      },
-                      child: Text(!locationController.isStreaming
-                          ? "Start trip"
-                          : "Complete")),
-                ],
-              ),
-            ),
-          if (bookingRequestController.bookedRide != null)
-            Positioned(
-              left: 0,
-              top: 0,
-              right: 0,
-              child: SafeArea(
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
+                  Column(
                     children: [
-                      InkWell(
-                        onTap: () async {},
-                        child: CircleAvatar(
-                          radius: 25.0,
-                          backgroundImage:
-                              NetworkImage("https://picsum.photos/200/300"),
-                        ),
+                      Text(
+                        "${ongoingRide!.price}",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        "Price",
                       ),
                     ],
                   ),
-                ),
+                  Column(
+                    children: [
+                      Text(
+                        "${ongoingRide.distance} m",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        "Distance",
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        "30 min",
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        "Duration",
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-        ],
+            TextFormField(
+              initialValue: ongoingRide.startaddress,
+              decoration: InputDecoration(
+                labelText: "From",
+              ),
+              focusNode: AlwaysDisabledFocusNode(),
+            ),
+            const SizedBox(
+              height: 15.0,
+            ),
+            TextFormField(
+              initialValue: ongoingRide.endaddress,
+              focusNode: AlwaysDisabledFocusNode(),
+              decoration: InputDecoration(
+                labelText: "To",
+              ),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                      onPressed: () async {
+                        await bookedRideController.cancelRide();
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("Cancel")),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          !locationService.isStreaming
+                              ? bookedRideController.startTrackingTrip()
+                              : bookedRideController.completeTrip();
+                        },
+                        child: Text(!locationService.isStreaming
+                            ? "Start trip"
+                            : "Complete")),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

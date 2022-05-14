@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:passenger_app/src/profile/profile_controller.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
+  static const String routeName = "/profile";
+
   const ProfileView({Key? key}) : super(key: key);
 
   @override

@@ -1,9 +1,11 @@
 import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
+import 'package:driver_app/src/map/map_service.dart';
 import 'package:driver_app/src/map/map_view.dart';
 import 'package:driver_app/src/services/location_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'booking_request_controller.dart';
 
@@ -33,6 +35,13 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                       ? MediaQuery.of(context).size.height
                       : MediaQuery.of(context).size.height * 0.6),
               child: MapView(
+                  setController: (GoogleMapController controller) {
+                    bookingRequestController.controller = controller;
+                    MapService.updateCameraToPositions(
+                        bookingRequestController.bookingRequest!.northeastbound,
+                        bookingRequestController.bookingRequest!.southwestbound,
+                        controller);
+                  },
                   myLocation: locationController.myLocation,
                   polylines: bookingRequestController.polylines,
                   markers: bookingRequestController.markers),
@@ -58,31 +67,64 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const SizedBox(
-                    height: 10.0,
-                  ),
-                  Card(
-                    child: ListTile(
-                      leading: Text("Price"),
-                      title: Text(bookingRequestController.bookingRequest!.price
-                              .toStringAsFixed(0) +
-                          " ETB"),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              "${bookingRequestController.bookingRequest!.price}",
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(
+                              "Price",
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              "${bookingRequestController.bookingRequest!.distance} m",
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(
+                              "Distance",
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              "30 min",
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(
+                              "Duration",
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
+                  ),
+                  TextFormField(
+                    initialValue:
+                        bookingRequestController.bookingRequest!.startaddress,
+                    decoration: InputDecoration(
+                      labelText: "From",
+                    ),
+                    focusNode: AlwaysDisabledFocusNode(),
                   ),
                   const SizedBox(
                     height: 15.0,
                   ),
-                  // ...mapController.destinations.map(((e) => Card(
-                  //         child: ListTile(
-                  //       title: Text(e.item1),
-                  //     )))),
-                  Card(
-                    child: ListTile(
-                      leading: Text("Distance"),
-                      title: Text(bookingRequestController
-                              .bookingRequest!.distance
-                              .toStringAsFixed(0) +
-                          " meters"),
+                  TextFormField(
+                    initialValue:
+                        bookingRequestController.bookingRequest!.endaddress,
+                    focusNode: AlwaysDisabledFocusNode(),
+                    decoration: InputDecoration(
+                      labelText: "To",
                     ),
                   ),
                   Row(
@@ -119,4 +161,9 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
           );
         });
   }
+}
+
+class AlwaysDisabledFocusNode extends FocusNode {
+  @override
+  bool get hasFocus => false;
 }

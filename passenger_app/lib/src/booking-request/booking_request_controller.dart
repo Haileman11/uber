@@ -15,6 +15,8 @@ import 'package:tuple/tuple.dart';
 class BookingRequestController with ChangeNotifier {
   BookedRide? bookedRide;
 
+  Tuple2<String, LatLng>? origin;
+
   BookingRequestController(
     this._bookingRequestService,
   ) {}
@@ -91,7 +93,7 @@ class BookingRequestController with ChangeNotifier {
           bookingRequest.polyline, bookingRequest.polylineId);
       polylines[polyline.polylineId] = polyline;
 
-      MapService.updateCameraToPositions(origin, destination, controller);
+      // MapService.updateCameraToPositions(origin, destination, controller);
       isLoading = false;
       notifyListeners();
       return bookingRequest.distance;
