@@ -22,7 +22,7 @@ class _HomepageState extends ConsumerState<GoTab> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       myLocation = await ref.read(locationProvider).getMyLocation();
     });
   }

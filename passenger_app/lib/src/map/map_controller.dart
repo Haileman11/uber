@@ -25,7 +25,7 @@ class MapController with ChangeNotifier {
   void setMapStyle(GoogleMapController myController, ThemeMode theme) {
     switch (theme) {
       case ThemeMode.system:
-        final theme = WidgetsBinding.instance!.window.platformBrightness;
+        final theme = WidgetsBinding.instance.window.platformBrightness;
         if (theme == Brightness.dark) {
           myController.setMapStyle(_darkMapStyle);
         } else {

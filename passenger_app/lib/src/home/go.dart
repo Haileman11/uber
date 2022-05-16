@@ -29,7 +29,7 @@ class _HomepageState extends ConsumerState<GoTab> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) async {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       myLocation = await ref.read(locationProvider).getMyLocation();
       _originController.text = await MapService.getAddress(myLocation!);
       ref.read(bookingRequestProvider).origin =

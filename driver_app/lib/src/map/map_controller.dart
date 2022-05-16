@@ -49,7 +49,7 @@ class MapController with ChangeNotifier {
       ThemeMode theme = next.themeMode;
       switch (theme) {
         case ThemeMode.system:
-          final theme = WidgetsBinding.instance!.window.platformBrightness;
+          final theme = WidgetsBinding.instance.window.platformBrightness;
           if (theme == Brightness.dark) {
             myController.setMapStyle(_darkMapStyle);
           } else {
