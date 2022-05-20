@@ -3,6 +3,7 @@ import 'package:common/services/notification_service.dart';
 import 'package:common/settings/settings_controller.dart';
 import 'package:common/settings/settings_view.dart';
 import 'package:driver_app/src/booked-ride/ui/earnings_view.dart';
+import 'package:driver_app/src/profile/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -83,6 +84,8 @@ class MyApp extends ConsumerWidget {
                 return const TripDetailsView();
               case EarningView.routeName:
                 return const EarningView();
+              case ProfileView.routeName:
+                return const ProfileView();
               case CompleteRideListView.routeName:
               default:
                 return FutureBuilder(

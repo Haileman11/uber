@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:passenger_app/src/map/map_service.dart';
 import 'package:passenger_app/src/map/map_view.dart';
 import 'package:passenger_app/src/services/location_service.dart';
+import 'package:passenger_app/src/services/place_service.dart';
 import 'package:tuple/tuple.dart';
 
 class PlacePicker extends ConsumerStatefulWidget {
@@ -122,7 +123,7 @@ class _PlacePickerState extends ConsumerState<PlacePicker> {
                     ),
                     ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).pop(Tuple2(
+                          Navigator.of(context).pop(Place(
                             location ?? "",
                             cameraPosition.target,
                           ));

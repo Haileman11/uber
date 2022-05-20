@@ -1,3 +1,4 @@
+import 'package:common/dio_client.dart';
 import 'package:common/ui/loadingIndicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +14,10 @@ import 'package:passenger_app/src/map/map_service.dart';
 import 'package:passenger_app/src/map/map_view.dart';
 import 'package:passenger_app/src/services/location_service.dart';
 import 'package:tuple/tuple.dart';
-import 'search.dart';
+import 'package:uuid/uuid.dart';
+
+import '../services/place_service.dart';
+import 'address_search.dart';
 
 class GoTab extends ConsumerStatefulWidget {
   const GoTab({Key? key}) : super(key: key);
@@ -33,7 +37,7 @@ class _HomepageState extends ConsumerState<GoTab> {
       myLocation = await ref.read(locationProvider).getMyLocation();
       _originController.text = await MapService.getAddress(myLocation!);
       ref.read(bookingRequestProvider).origin =
-          Tuple2(_originController.text, myLocation!);
+          Place(_originController.text, myLocation!);
     });
   }
 
@@ -63,7 +67,8 @@ class _HomepageState extends ConsumerState<GoTab> {
                       SliverToBoxAdapter(
                         child: Container(
                           constraints: BoxConstraints(
-                              maxHeight: MediaQuery.of(context).size.height),
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * 0.6),
                           child: MapView(
                             myLocation: locationController.myLocation,
                           ),
@@ -98,95 +103,6 @@ class _HomepageState extends ConsumerState<GoTab> {
                 );
               }
             }),
-
-            // Positioned(
-            //   left: 0,
-            //   top: 0,
-            //   right: 0,
-            //   child: Container(
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: Column(
-            //       children: [
-            //         Card(
-            //           child: AppBar(
-            //             backgroundColor: _theme.backgroundColor,
-            //             elevation: 0.0,
-            //             // leading: IconButton(
-            //             //   onPressed: () {
-            //             //     _scaffoldKey.currentState!.openDrawer();
-            //             //   },
-            //             //   icon: const Icon(
-            //             //     Icons.menu,
-            //             //   ),
-            //             // ),
-            //             title: InkWell(
-            //               onTap: () async {
-            //                 LatLng? selectedLocation;
-            //                 await showSearch(
-            //                     context: context, delegate: DataSearch());
-            //                 if (selectedLocation != null) {
-            //                   // setState(() {
-            //                   //   mapController.destinations.add( selectedLocation);
-            //                   // });
-            //                 }
-            //               },
-            //               child: TextField(
-            //                 enabled: false,
-            //                 decoration: InputDecoration(
-            //                   hintText: "Where to?",
-            //                   prefixIcon: Icon(Icons.search),
-            //                   border: OutlineInputBorder(
-            //                     borderSide: BorderSide.none,
-            //                   ),
-            //                 ),
-            //                 controller: _destinationController,
-            //               ),
-            //             ),
-            //             actions: [
-            //               IconButton(
-            //                 onPressed: () => placePickerHandler(
-            //                     mapController, locationController),
-            //                 icon: const Icon(
-            //                   Icons.location_on_sharp,
-            //                 ),
-            //               ),
-            //             ],
-            //           ),
-            //         ),
-            //         Row(
-            //           crossAxisAlignment: CrossAxisAlignment.center,
-            //           mainAxisAlignment: MainAxisAlignment.center,
-            //           children: <Widget>[
-            //             Padding(
-            //               padding: const EdgeInsets.all(8.0),
-            //               child: ChoiceChip(
-            //                 label: const Text("Work"),
-            //                 onSelected: (val) {},
-            //                 selected: false,
-            //               ),
-            //             ),
-            //             Padding(
-            //               padding: const EdgeInsets.all(8.0),
-            //               child: ChoiceChip(
-            //                 label: const Text("Home"),
-            //                 onSelected: (val) {},
-            //                 selected: false,
-            //               ),
-            //             ),
-            //             Padding(
-            //               padding: const EdgeInsets.all(8.0),
-            //               child: ChoiceChip(
-            //                 label: const Text("Gym"),
-            //                 onSelected: (val) {},
-            //                 selected: false,
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -218,6 +134,24 @@ class _HomepageState extends ConsumerState<GoTab> {
             ),
             TextFormField(
               controller: _originController,
+              onTap: () async {
+                // should show search screen here
+                final sessionToken = Uuid().v4();
+                final result = await showSearch(
+                  context: context,
+                  query: _originController.text,
+                  delegate: AddressSearch(sessionToken),
+                );
+                // This will change the text displayed in the TextField
+                if (result != null) {
+                  final placeDetails = await PlaceApiProvider(
+                          ref.read(dioClientProvider), sessionToken)
+                      .getPlaceDetailFromId(result.placeId);
+
+                  _originController.text = result.description;
+                  bookingRequestController.origin = placeDetails;
+                }
+              },
               decoration: InputDecoration(
                 labelText: "From",
                 suffixIcon: IconButton(
@@ -225,11 +159,12 @@ class _HomepageState extends ConsumerState<GoTab> {
                     var selectedLocation = await placePickerHandler(
                         mapController, locationController);
                     if (selectedLocation != null) {
-                      _originController.text = selectedLocation.item1;
+                      _originController.text =
+                          selectedLocation.formatted_address;
                       bookingRequestController.origin = selectedLocation;
                       MapService.updateCameraToPositions(
-                          bookingRequestController.origin!.item2,
-                          bookingRequestController.destinations.first.item2,
+                          bookingRequestController.origin!.location,
+                          bookingRequestController.destinations.first.location,
                           mapController.controller);
                     }
                   },
@@ -245,6 +180,24 @@ class _HomepageState extends ConsumerState<GoTab> {
             ),
             TextFormField(
               focusNode: AlwaysDisabledFocusNode(),
+              onTap: () async {
+                // should show search screen here
+                final sessionToken = Uuid().v4();
+                final result = await showSearch(
+                  context: context,
+                  query: _destinationController.text,
+                  delegate: AddressSearch(sessionToken),
+                );
+                // This will change the text displayed in the TextField
+                if (result != null) {
+                  final placeDetails = await PlaceApiProvider(
+                          ref.read(dioClientProvider), sessionToken)
+                      .getPlaceDetailFromId(result.placeId);
+
+                  _destinationController.text = result.description;
+                  bookingRequestController.addDestination(placeDetails);
+                }
+              },
               decoration: InputDecoration(
                 labelText: "Where to",
                 suffixIcon: IconButton(
@@ -252,13 +205,14 @@ class _HomepageState extends ConsumerState<GoTab> {
                     var selectedLocation = await placePickerHandler(
                         mapController, locationController);
                     if (selectedLocation != null) {
-                      _destinationController.text = selectedLocation.item1;
+                      _destinationController.text =
+                          selectedLocation.formatted_address;
                       bookingRequestController.addDestination(
                         selectedLocation,
                       );
                       MapService.updateCameraToPositions(
-                          bookingRequestController.origin!.item2,
-                          selectedLocation.item2,
+                          bookingRequestController.origin!.location,
+                          selectedLocation.location,
                           mapController.controller);
                     }
                   },
@@ -278,7 +232,7 @@ class _HomepageState extends ConsumerState<GoTab> {
                     ? () async {
                         await bookingRequestController.calculateDistance(
                           myLocation!,
-                          bookingRequestController.destinations.first.item2,
+                          bookingRequestController.destinations.first.location,
                         );
 
                         Navigator.of(context).push(MaterialPageRoute(
@@ -296,9 +250,9 @@ class _HomepageState extends ConsumerState<GoTab> {
     );
   }
 
-  Future<Tuple2<String, LatLng>?> placePickerHandler(
+  Future<Place?> placePickerHandler(
       MapController mapController, LocationService locationController) async {
-    Tuple2<String, LatLng>? selectedLocation = await Navigator.of(context)
+    Place? selectedLocation = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => PlacePicker()));
     return selectedLocation;
     // if (selectedLocation != null) {

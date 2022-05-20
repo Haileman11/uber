@@ -10,12 +10,13 @@ import 'package:passenger_app/src/booking-request/booking_request.dart';
 import 'package:passenger_app/src/booking-request/booking_request_service.dart';
 import 'package:passenger_app/src/map/map_service.dart';
 import 'package:passenger_app/src/services/location_service.dart';
+import 'package:passenger_app/src/services/place_service.dart';
 import 'package:tuple/tuple.dart';
 
 class BookingRequestController with ChangeNotifier {
   BookedRide? bookedRide;
 
-  Tuple2<String, LatLng>? origin;
+  Place? origin;
 
   BookingRequestController(
     this._bookingRequestService,
@@ -26,7 +27,7 @@ class BookingRequestController with ChangeNotifier {
   bool isLoading = false;
   BookingRequest? bookingRequest;
 
-  Set<Tuple2<String, LatLng>> destinations = {};
+  Set<Place> destinations = {};
   List<Marker> markers = [];
   Map<PolylineId, Polyline> polylines = {};
 
@@ -57,12 +58,12 @@ class BookingRequestController with ChangeNotifier {
     }
   }
 
-  Future<void> addDestination(Tuple2<String, LatLng> destination) async {
+  Future<void> addDestination(Place destination) async {
     destinations.add(destination);
     markers.add(
       Marker(
-        markerId: MarkerId(destination.item1),
-        position: destination.item2,
+        markerId: MarkerId(destination.formatted_address),
+        position: destination.location,
       ),
     );
     notifyListeners();

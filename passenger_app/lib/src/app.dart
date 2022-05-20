@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/services/notification_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:passenger_app/src/booking-request/ui/place_picker.dart';
+import 'package:passenger_app/src/profile/profile_view.dart';
 import 'package:passenger_app/src/splash_screen.dart';
 
 import 'complete-ride/complete_ride_details_view.dart';
@@ -85,6 +86,8 @@ class MyApp extends ConsumerWidget {
               //   return const CompleteRideDetailsView(routeSettings.arguments);
               // case SampleItemListView.routeName:
               //   return Container();
+              case ProfileView.routeName:
+                return ProfileView();
               case PlacePicker.routeName:
                 return PlacePicker();
               default:

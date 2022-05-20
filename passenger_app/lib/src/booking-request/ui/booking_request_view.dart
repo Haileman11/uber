@@ -12,6 +12,7 @@ import 'package:passenger_app/src/map/map_service.dart';
 
 import 'package:passenger_app/src/map/map_view.dart';
 import 'package:passenger_app/src/services/location_service.dart';
+import 'package:passenger_app/src/services/place_service.dart';
 import 'package:tuple/tuple.dart';
 
 class BookingRequestView extends ConsumerStatefulWidget {
@@ -136,15 +137,17 @@ class _HomepageState extends ConsumerState<BookingRequestView> {
 
   void placePickerHandler(
       MapController mapController, LocationService locationController) async {
-    Tuple2<String, LatLng>? selectedLocation = await Navigator.of(context)
+    Place? selectedLocation = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (_) => PlacePicker()));
     if (selectedLocation != null) {
       ref.read(bookingRequestProvider).addDestination(
             selectedLocation,
           );
 
-      MapService.updateCameraToPositions(locationController.myLocation,
-          selectedLocation.item2, ref.read(bookingRequestProvider).controller);
+      MapService.updateCameraToPositions(
+          locationController.myLocation,
+          selectedLocation.location,
+          ref.read(bookingRequestProvider).controller);
     }
   }
 
