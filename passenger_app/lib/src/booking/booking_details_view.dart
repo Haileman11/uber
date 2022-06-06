@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:passenger_app/src/booked-ride/booked_ride.dart';
-import 'package:passenger_app/src/booked-ride/booked_ride_controller.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-/// Displays detailed information about a SampleItem.
-class CompleteRideDetailsView extends ConsumerStatefulWidget {
-  final BookedRide completeRide;
+import 'booking.dart';
 
-  const CompleteRideDetailsView(this.completeRide, {Key? key})
-      : super(key: key);
+/// Displays detailed information about a SampleItem.
+class BookingDetailsView extends ConsumerStatefulWidget {
+  final Booking booking;
+
+  const BookingDetailsView(this.booking, {Key? key}) : super(key: key);
 
   static const routeName = '/booking';
 
   @override
-  ConsumerState<CompleteRideDetailsView> createState() =>
-      _CompleteRideDetailsViewState();
+  ConsumerState<BookingDetailsView> createState() => _BookingDetailsViewState();
 }
 
-class _CompleteRideDetailsViewState
-    extends ConsumerState<CompleteRideDetailsView> {
+class _BookingDetailsViewState extends ConsumerState<BookingDetailsView> {
   @override
   Widget build(BuildContext context) {
-    BookedRide completeRide = widget.completeRide;
+    Booking booking = widget.booking;
     return Scaffold(
         body: Center(
       child: SingleChildScrollView(
@@ -59,16 +56,17 @@ class _CompleteRideDetailsViewState
                         Card(
                           child: ListTile(
                             leading: Text("Price"),
-                            title: Text(
-                                completeRide.price.toStringAsFixed(0) + " ETB"),
+                            title: Text(booking.bookingRequest.price
+                                    .toStringAsFixed(0) +
+                                " ETB"),
                           ),
                         ),
                         Card(
                           child: ListTile(
                             leading: Text("Distance"),
-                            title: Text(
-                                completeRide.distance.toStringAsFixed(0) +
-                                    " meters"),
+                            title: Text(booking.bookingRequest.route.distance
+                                    .toStringAsFixed(0) +
+                                " meters"),
                           ),
                         ),
                       ],

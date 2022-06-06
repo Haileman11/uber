@@ -1,6 +1,7 @@
-import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/booked_ride_view.dart';
 import 'package:driver_app/src/map/map_service.dart';
 import 'package:driver_app/src/map/map_view.dart';
+import 'package:driver_app/src/services/booking_data.dart';
 import 'package:driver_app/src/services/location_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
   Widget build(BuildContext context) {
     final locationController = ref.watch(locationProvider);
     final bookingRequestController = ref.watch(bookingRequestProvider);
+    final bookingDataController = ref.watch(bookingDataProvider);
 
     return Scaffold(
       bottomSheet: bookingRequestWidget(bookingRequestController),
@@ -38,8 +40,10 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                   setController: (GoogleMapController controller) {
                     bookingRequestController.controller = controller;
                     MapService.updateCameraToPositions(
-                        bookingRequestController.bookingRequest!.northeastbound,
-                        bookingRequestController.bookingRequest!.southwestbound,
+                        bookingDataController
+                            .activeBooking!.bookingRequest.route.northeastbound,
+                        bookingDataController
+                            .activeBooking!.bookingRequest.route.southwestbound,
                         controller);
                   },
                   myLocation: locationController.myLocation,
@@ -54,6 +58,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
 
   Widget bookingRequestWidget(
       BookingRequestController bookingRequestController) {
+    final locationController = ref.watch(locationProvider);
     return BottomSheet(
         enableDrag: false,
         onClosing: () {},
@@ -75,7 +80,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                         Column(
                           children: [
                             Text(
-                              "${bookingRequestController.bookingRequest!.price}",
+                              "${bookingRequestController.activeBooking!.bookingRequest.price} ETB",
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             Text(
@@ -86,7 +91,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                         Column(
                           children: [
                             Text(
-                              "${bookingRequestController.bookingRequest!.distance} m",
+                              "${bookingRequestController.activeBooking!.bookingRequest.route.distance} km",
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             Text(
@@ -97,7 +102,7 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                         Column(
                           children: [
                             Text(
-                              "30 min",
+                              "${bookingRequestController.activeBooking!.bookingRequest.route.duration} min",
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             Text(
@@ -109,8 +114,8 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                     ),
                   ),
                   TextFormField(
-                    initialValue:
-                        bookingRequestController.bookingRequest!.startaddress,
+                    initialValue: bookingRequestController
+                        .activeBooking!.bookingRequest.route.startaddress,
                     decoration: InputDecoration(
                       labelText: "From",
                     ),
@@ -120,8 +125,8 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                     height: 15.0,
                   ),
                   TextFormField(
-                    initialValue:
-                        bookingRequestController.bookingRequest!.endaddress,
+                    initialValue: bookingRequestController
+                        .activeBooking!.bookingRequest.route.endaddress,
                     focusNode: AlwaysDisabledFocusNode(),
                     decoration: InputDecoration(
                       labelText: "To",
@@ -133,7 +138,8 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                         child: TextButton(
                             onPressed: () async {
                               await bookingRequestController
-                                  .acceptBookingRequest(false);
+                                  .acceptBookingRequest(
+                                      false, locationController.myLocation);
                               Navigator.of(context).pop();
                             },
                             child: Text("Decline")),
@@ -143,12 +149,9 @@ class _BookingRequestViewState extends ConsumerState<BookingRequestView> {
                           padding: const EdgeInsets.all(4.0),
                           child: ElevatedButton(
                               onPressed: () async {
-                                if (await bookingRequestController
-                                    .acceptBookingRequest(true)) ;
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (_) => OngoingRideView()),
-                                );
+                                await bookingRequestController
+                                    .acceptBookingRequest(
+                                        true, locationController.myLocation);
                               },
                               child: const Text("Accept")),
                         ),

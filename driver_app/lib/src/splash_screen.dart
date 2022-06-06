@@ -1,11 +1,13 @@
 import 'package:common/authentication/view/login.dart';
 import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
 import 'package:driver_app/src/profile/profile_controller.dart';
+import 'package:driver_app/src/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/shared_preferences_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'home/home.dart';
+import 'services/booking_data.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -89,7 +91,9 @@ class SplashScreenState extends ConsumerState<SplashScreen> {
     return FutureBuilder(
         future: Future.wait([
           ref.read(profileProvider).getUserProfile(),
-          ref.read(bookedRideProvider).getBookedRides()
+          // ref.read(bookedRideProvider).getBookedRides(),
+          ref.read(bookingDataProvider).getBookingData(),
+          ref.read(locationProvider).getMyLocation()
         ]),
         builder: (context, snapshot) {
           return const Home();

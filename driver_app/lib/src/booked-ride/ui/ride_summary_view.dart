@@ -1,9 +1,10 @@
 import 'package:common/ui/loadingIndicator.dart';
 import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
-import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
+import 'package:driver_app/src/booked-ride/ui/booked_ride_view.dart';
 import 'package:driver_app/src/booking-request/booking_request_view.dart';
 import 'package:driver_app/src/map/map_service.dart';
 import 'package:driver_app/src/map/map_view.dart';
+import 'package:driver_app/src/services/booking_data.dart';
 import 'package:driver_app/src/services/location_service.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +24,11 @@ class RideSummaryView extends ConsumerStatefulWidget {
 class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
   @override
   Widget build(BuildContext context) {
+    final bookingData = ref.watch(bookingDataProvider);
     final bookedRideController = ref.watch(bookedRideProvider);
     final locationController = ref.watch(locationProvider);
     return Scaffold(
-      bottomSheet: completeRideWidget(bookedRideController, locationController),
+      bottomSheet: completeRideWidget(),
       body: Stack(
         children: <Widget>[
           Builder(builder: (context) {
@@ -44,10 +46,10 @@ class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
                             setController: (GoogleMapController controller) {
                               bookedRideController.controller = controller;
                               MapService.updateCameraToPositions(
-                                  bookedRideController
-                                      .bookedRide!.northeastbound,
-                                  bookedRideController
-                                      .bookedRide!.southwestbound,
+                                  bookingData.activeBooking!.bookingRequest
+                                      .route.northeastbound,
+                                  bookedRideController.activeBooking!
+                                      .bookingRequest.route.southwestbound,
                                   controller);
                             },
                             myLocation: locationController.myLocation,
@@ -106,94 +108,10 @@ class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
         ],
       ),
     );
-    return Scaffold(
-        body: Center(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const SizedBox(
-              height: 10.0,
-            ),
-
-            Container(
-              padding: const EdgeInsets.all(8.0),
-              constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4),
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    const SizedBox(
-                      height: 10.0,
-                    ),
-                    Column(
-                      children: [
-                        Center(
-                            child: Text("You have reached your destination")),
-                        SizedBox(
-                          height: 15.0,
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-
-            Card(
-              child: ListTile(
-                leading: Text("Price"),
-                title: Text(bookedRideController.completeRide!.price
-                        .toStringAsFixed(0) +
-                    " ETB"),
-              ),
-            ),
-            const SizedBox(
-              height: 15.0,
-            ),
-            // ...mapController.destinations.map(((e) => Card(
-            //         child: ListTile(
-            //       title: Text(e.item1),
-            //     )))),
-            Card(
-              child: ListTile(
-                leading: Text("Distance"),
-                title: Text(bookedRideController.completeRide!.distance
-                        .toStringAsFixed(0) +
-                    " meters"),
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          // if (
-                          //   await bookedRideController
-                          //     .confirmPayment(true)) {
-                          // }
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Confirm Payment")),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    ));
   }
 
-  completeRideWidget(BookedRideController bookedRideController,
-      LocationService locationController) {
-    var completeRide = bookedRideController.bookedRide;
+  completeRideWidget() {
+    var completeRide = ref.read(bookingDataProvider).activeBooking!.bookedRide;
     return Container(
       padding: const EdgeInsets.all(8.0),
       constraints:
@@ -222,7 +140,7 @@ class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
                   Column(
                     children: [
                       Text(
-                        "${completeRide.distance} m",
+                        "${completeRide.tripPolyline!.distance} m",
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       Text(
@@ -245,7 +163,7 @@ class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
               ),
             ),
             TextFormField(
-              initialValue: completeRide.startaddress,
+              initialValue: completeRide.tripPolyline!.startaddress,
               decoration: InputDecoration(
                 labelText: "From",
               ),
@@ -255,7 +173,7 @@ class _BookingRequestViewState extends ConsumerState<RideSummaryView> {
               height: 15.0,
             ),
             TextFormField(
-              initialValue: completeRide.endaddress,
+              initialValue: completeRide.tripPolyline!.endaddress,
               focusNode: AlwaysDisabledFocusNode(),
               decoration: InputDecoration(
                 labelText: "To",

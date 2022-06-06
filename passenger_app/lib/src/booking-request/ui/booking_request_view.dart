@@ -1,52 +1,26 @@
 import 'package:common/ui/loadingIndicator.dart';
-import 'package:common/ui/show_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:passenger_app/src/booked-ride/booked_ride_controller.dart';
 import 'package:passenger_app/src/booking-request/booking_request_controller.dart';
-import 'package:passenger_app/src/booking-request/ui/place_picker.dart';
-import 'package:passenger_app/src/map/map_controller.dart';
 import 'package:passenger_app/src/map/map_service.dart';
 
 import 'package:passenger_app/src/map/map_view.dart';
+import 'package:passenger_app/src/services/booking_data.dart';
 import 'package:passenger_app/src/services/location_service.dart';
-import 'package:passenger_app/src/services/place_service.dart';
-import 'package:tuple/tuple.dart';
 
-class BookingRequestView extends ConsumerStatefulWidget {
+class BookingRequestView extends StatefulWidget {
   const BookingRequestView({Key? key}) : super(key: key);
 
   @override
   _HomepageState createState() => _HomepageState();
 }
 
-class _HomepageState extends ConsumerState<BookingRequestView> {
-  String? currentAddress;
-
-  var pageController = PageController();
-  int selectedIndex = 0;
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      myLocation = await ref.read(locationProvider).getMyLocation();
-    });
-  }
-
-  LatLng? myLocation;
-
-  final _destinationController = TextEditingController();
-
+class _HomepageState extends State<BookingRequestView> {
   @override
   Widget build(BuildContext context) {
     final ThemeData _theme = Theme.of(context);
-    final locationController = ref.watch(locationProvider);
-    final mapController = ref.watch(mapProvider);
-    final bookingRequestController = ref.watch(bookingRequestProvider);
-    final bookedRideController = ref.watch(bookedRideProvider);
 
     return Scaffold(
       bottomSheet: BottomSheet(
@@ -54,25 +28,19 @@ class _HomepageState extends ConsumerState<BookingRequestView> {
         onClosing: () {},
         builder: (context) {
           return Container(
-            padding: const EdgeInsets.all(8.0),
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4),
-            child: bookingRequestController.destinations.isEmpty
-                ? loadingIndicator
-                : PageView(
-                    controller: pageController,
-                    children: [
-                      if (bookingRequestController.bookingRequest != null)
-                        completeOrder(context),
-                    ],
-                  ),
-          );
+              padding: const EdgeInsets.all(8.0),
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.4),
+              child: waitingForDriver(context));
         },
       ),
       extendBodyBehindAppBar: true,
       body: Stack(
         children: <Widget>[
-          Builder(builder: (context) {
+          Consumer(builder: (context, ref, child) {
+            final locationController = ref.watch(locationProvider);
+
+            final bookingRequestController = ref.watch(bookingRequestProvider);
             if (locationController.serviceEnabled == null) {
               return loadingIndicator;
             } else if (locationController.serviceEnabled!) {
@@ -83,17 +51,15 @@ class _HomepageState extends ConsumerState<BookingRequestView> {
                       child: Container(
                         constraints: BoxConstraints(
                             maxHeight:
-                                bookingRequestController.destinations.isEmpty
-                                    ? MediaQuery.of(context).size.height
-                                    : MediaQuery.of(context).size.height * 0.6),
+                                MediaQuery.of(context).size.height * 0.6),
                         child: MapView(
                             setController: (GoogleMapController controller) {
                               bookingRequestController.controller = controller;
                               MapService.updateCameraToPositions(
-                                  bookingRequestController
-                                      .bookingRequest!.northeastbound,
-                                  bookingRequestController
-                                      .bookingRequest!.southwestbound,
+                                  bookingRequestController.activeBooking!
+                                      .bookingRequest.route.northeastbound,
+                                  bookingRequestController.activeBooking!
+                                      .bookingRequest.route.southwestbound,
                                   controller);
                             },
                             myLocation: locationController.myLocation,
@@ -135,125 +101,66 @@ class _HomepageState extends ConsumerState<BookingRequestView> {
     );
   }
 
-  void placePickerHandler(
-      MapController mapController, LocationService locationController) async {
-    Place? selectedLocation = await Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => PlacePicker()));
-    if (selectedLocation != null) {
-      ref.read(bookingRequestProvider).addDestination(
-            selectedLocation,
-          );
-
-      MapService.updateCameraToPositions(
-          locationController.myLocation,
-          selectedLocation.location,
-          ref.read(bookingRequestProvider).controller);
-    }
-  }
-
-  Widget completeOrder(BuildContext context) {
-    final mapController = ref.watch(mapProvider);
-    final bookingRequestController = ref.watch(bookingRequestProvider);
-
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const SizedBox(
-              height: 10.0,
-            ),
-            Text(
-              "Select Ride",
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            SizedBox(
-              height: 150.0,
-              child: ListView.builder(
-                itemCount:
-                    bookingRequestController.bookingRequest!.price.length,
-                padding: const EdgeInsets.all(16.0),
-                shrinkWrap: true,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (ctx, index) {
-                  var package =
-                      bookingRequestController.bookingRequest!.price[index];
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ChoiceChip(
-                      elevation: 2.0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                        Radius.circular(4),
-                      )),
-                      avatarBorder: RoundedRectangleBorder(
-                        side: BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(4),
-                        ),
-                      ),
-                      backgroundColor:
-                          Theme.of(context).scaffoldBackgroundColor,
-                      label: Column(
-                        children: [
-                          SizedBox(
-                              width: 100,
-                              child: Image.asset(
-                                'assets/images/${package.packageName}.png',
-                                height: 50,
-                                fit: BoxFit.cover,
-                              )),
-                          Text(package.packageName),
-                          Text("${package.price.toStringAsFixed(0)} ETB"),
-                        ],
-                      ),
-                      onSelected: (val) {
-                        setState(() {
-                          if (val) {
-                            selectedIndex = index;
-                          }
-                          print(selectedIndex);
-                        });
-                      },
-                      selected: selectedIndex == index,
-                    ),
-                  );
-                },
+  Widget waitingForDriver(BuildContext context) {
+    return Consumer(builder: (context, ref, child) {
+      final bookingRequest =
+          ref.read(bookingRequestProvider).activeBooking!.bookingRequest;
+      return Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Waiting for a driver"),
+              Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: CircularProgressIndicator.adaptive()),
+            ],
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (await ref
+                  .read(bookingRequestProvider)
+                  .cancelBookingRequest()) {
+                ref.read(bookingDataProvider).getBookingData();
+              }
+            },
+            child: Text("Cancel"),
+          ),
+          Card(
+            child: ListTile(
+              dense: true,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.green,
+                  radius: 8,
+                ),
               ),
+              horizontalTitleGap: 4,
+              title:
+                  Text("From", style: Theme.of(context).textTheme.bodyMedium),
+              subtitle: Text(bookingRequest.route.startaddress,
+                  style: Theme.of(context).textTheme.bodyText1),
             ),
-            // Text(
-            //   "${bookingRequestController.bookingRequest!.distance.toStringAsFixed(0)} meters",
-            //   style: Theme.of(context).textTheme.headline6,
-            // ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: ElevatedButton(
-                  onPressed: (myLocation != null &&
-                          bookingRequestController.destinations.isNotEmpty &&
-                          !bookingRequestController.isLoading)
-                      ? () {
-                          ref.read(bookingRequestProvider).bookTrip(
-                              bookingRequestController
-                                  .polylines.keys.first.value,
-                              bookingRequestController.bookingRequest!
-                                  .price[selectedIndex].packageName);
-
-                          Navigator.of(context).pop();
-                          showSnackBar(
-                              context, "Successfully requested ride.", false);
-                        }
-                      : null,
-                  child: bookingRequestController.isLoading
-                      ? CircularProgressIndicator.adaptive()
-                      : const Text("Request ride")),
+          ),
+          Card(
+            child: ListTile(
+              dense: true,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.red,
+                  radius: 8,
+                ),
+              ),
+              horizontalTitleGap: 4,
+              title: Text("To", style: Theme.of(context).textTheme.bodyMedium),
+              subtitle: Text(bookingRequest.route.endaddress,
+                  style: Theme.of(context).textTheme.bodyText1),
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ],
+      );
+    });
   }
 }

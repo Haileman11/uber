@@ -14,9 +14,10 @@ class NotificationService extends ChangeNotifier {
     return _notificationService;
   }
   String? token;
-  Map? bookingRequestJson;
-  Map? ongoingRideJson;
-  Map? completeRideJson;
+  Map? bookingJson;
+  // Map? bookingRequestJson;
+  // Map? ongoingRideJson;
+  // Map? completeRideJson;
   NotificationService._internal();
   late NavigationService _navigationService;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -34,18 +35,18 @@ class NotificationService extends ChangeNotifier {
     RemoteNotification? notification = message.notification;
 
     print(message.data);
-    if (message.data["bookingRequestId"] != null) {
-      bookingRequestJson = message.data;
+    if (message.data["booking"] != null) {
+      bookingJson = json.decode(message.data['booking']);
       notifyListeners();
     }
-    if (message.data["bookedRideId"] != null) {
-      if (message.data['rideStatus'] == "complete") {
-        completeRideJson = message.data;
-      } else {
-        ongoingRideJson = message.data;
-      }
-      notifyListeners();
-    }
+    // if (message.data["bookedRideId"] != null) {
+    //   if (message.data['rideStatus'] == "complete") {
+    //     completeRideJson = message.data;
+    //   } else {
+    //     ongoingRideJson = message.data;
+    //   }
+    //   notifyListeners();
+    // }
 
     if (notification != null) {
       flutterLocalNotificationsPlugin.show(
@@ -60,7 +61,7 @@ class NotificationService extends ChangeNotifier {
             icon: 'launch_background',
           ),
         ),
-        payload: json.encode(bookingRequestJson),
+        payload: json.encode(bookingJson),
       );
     }
   }

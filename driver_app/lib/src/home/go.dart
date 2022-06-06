@@ -1,4 +1,5 @@
 import 'package:driver_app/src/booking-request/booking_request_view.dart';
+import 'package:driver_app/src/services/booking_data.dart';
 import 'package:driver_app/src/services/top_level_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,10 +22,6 @@ class _HomepageState extends ConsumerState<GoTab> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      myLocation = await ref.read(locationProvider).getMyLocation();
-    });
   }
 
   LatLng? myLocation;
@@ -38,6 +35,7 @@ class _HomepageState extends ConsumerState<GoTab> {
     final ThemeData _theme = Theme.of(context);
     final locationController = ref.watch(locationProvider);
     final mapController = ref.watch(mapProvider);
+    final bookingController = ref.watch(bookingDataProvider);
 
     return Scaffold(
       bottomSheet: Container(
@@ -53,9 +51,9 @@ class _HomepageState extends ConsumerState<GoTab> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                mapController.circles.isEmpty
-                    ? "You're Offline"
-                    : "You're Online",
+                bookingController.activityStatus
+                    ? "You're Online"
+                    : "You're Offline",
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
@@ -108,13 +106,14 @@ class _HomepageState extends ConsumerState<GoTab> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-          child: Text(mapController.circles.isEmpty ? "Go" : "Stop"),
-          backgroundColor: mapController.circles.isEmpty
-              ? Theme.of(context).colorScheme.primary
-              : Colors.red,
+          child: Text(bookingController.activityStatus ? "Stop" : "Go"),
+          backgroundColor: bookingController.activityStatus
+              ? Colors.red
+              : Theme.of(context).colorScheme.primary,
           onPressed: () {
             //TODO
-            mapController.toggleCircle();
+            bookingController.toggleActivityStatus(myLocation!);
+            mapController.toggleCircle(bookingController.activityStatus);
           }),
       body: SafeArea(
         child: Stack(

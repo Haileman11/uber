@@ -13,7 +13,7 @@ class ProfileController with ChangeNotifier {
 
   AuthenticationController authenticationController;
   ProfileController(this._profileService, this.authenticationController) {}
-  getUserProfile() async {
+  Future<void> getUserProfile() async {
     var profileData = await _profileService.getUserProfile();
     if (profileData != null) {
       profile = Profile.fromJson(profileData);

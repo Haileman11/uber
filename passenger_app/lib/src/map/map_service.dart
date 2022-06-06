@@ -73,38 +73,38 @@ class MapService {
   }
 
   static void updateCameraToPositions(
-      LatLng origin, LatLng destination, GoogleMapController controller) {
-    double startLatitude = origin.latitude;
-    double startLongitude = origin.longitude;
-    double destinationLatitude = destination.latitude;
-    double destinationLongitude = destination.longitude;
+      LatLng northEast, LatLng southWest, GoogleMapController controller) {
+    // double startLatitude = origin.latitude;
+    // double startLongitude = origin.longitude;
+    // double destinationLatitude = destination.latitude;
+    // double destinationLongitude = destination.longitude;
 
-    // Calculating to check that the position relative
-    // to the frame, and pan & zoom the camera accordingly.
-    double miny = (startLatitude <= destinationLatitude)
-        ? startLatitude
-        : destinationLatitude;
-    double minx = (startLongitude <= destinationLongitude)
-        ? startLongitude
-        : destinationLongitude;
-    double maxy = (startLatitude <= destinationLatitude)
-        ? destinationLatitude
-        : startLatitude;
-    double maxx = (startLongitude <= destinationLongitude)
-        ? destinationLongitude
-        : startLongitude;
+    // // Calculating to check that the position relative
+    // // to the frame, and pan & zoom the camera accordingly.
+    // double miny = (startLatitude <= destinationLatitude)
+    //     ? startLatitude
+    //     : destinationLatitude;
+    // double minx = (startLongitude <= destinationLongitude)
+    //     ? startLongitude
+    //     : destinationLongitude;
+    // double maxy = (startLatitude <= destinationLatitude)
+    //     ? destinationLatitude
+    //     : startLatitude;
+    // double maxx = (startLongitude <= destinationLongitude)
+    //     ? destinationLongitude
+    //     : startLongitude;
 
-    double southWestLatitude = miny;
-    double southWestLongitude = minx;
+    // double southWestLatitude = miny;
+    // double southWestLongitude = minx;
 
-    double northEastLatitude = maxy;
-    double northEastLongitude = maxx;
+    // double northEastLatitude = maxy;
+    // double northEastLongitude = maxx;
 
     controller.animateCamera(
       CameraUpdate.newLatLngBounds(
         LatLngBounds(
-          northeast: LatLng(northEastLatitude, northEastLongitude),
-          southwest: LatLng(southWestLatitude, southWestLongitude),
+          northeast: northEast,
+          southwest: southWest,
         ),
         100.0,
       ),

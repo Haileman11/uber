@@ -1,5 +1,5 @@
 import 'package:driver_app/src/booked-ride/booked_ride_controller.dart';
-import 'package:driver_app/src/booked-ride/ui/booked_ride_list_view.dart';
+import 'package:driver_app/src/booking/bookings_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -78,7 +78,7 @@ class _EarningViewState extends ConsumerState<EarningView> {
                       ],
                     ),
                   ),
-                  CompleteRideListView()
+                  BookingListView()
                 ],
               ),
             ),

@@ -11,7 +11,6 @@ import 'package:passenger_app/src/booking-request/ui/place_picker.dart';
 import 'package:passenger_app/src/profile/profile_view.dart';
 import 'package:passenger_app/src/splash_screen.dart';
 
-import 'complete-ride/complete_ride_details_view.dart';
 import 'map/map_controller.dart';
 
 /// The Widget that configures your application.

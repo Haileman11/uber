@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:common/shared_preferences_service.dart';
 import 'package:passenger_app/src/home/home.dart';
+import 'package:passenger_app/src/services/booking_data.dart';
 import 'package:passenger_app/src/services/top_level_providers.dart';
 import 'home/go.dart';
 import 'profile/profile_controller.dart';
@@ -83,7 +84,10 @@ class SplashScreenState extends ConsumerState<SplashScreen> {
       });
     }
     return FutureBuilder(
-        future: ref.read(profileProvider).getUserProfile(),
+        future: Future.wait([
+          ref.read(profileProvider).getUserProfile(),
+          ref.read(bookingDataProvider).getBookingData()
+        ]),
         builder: (context, snapshot) {
           return const Home();
         });

@@ -41,6 +41,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_polyline_points: ^1.0.0
+  flutter_rating_bar: ^4.0.1
   flutter_riverpod: ^1.0.3
   geocoding: ^2.0.2
   geolocator: ^8.2.0

@@ -10,9 +10,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:driver_app/src/splash_screen.dart';
 
-import 'booked-ride/ui/booked_ride_details_view.dart';
-import 'booked-ride/ui/booked_ride_list_view.dart';
-
 /// The Widget that configures your application.
 class MyApp extends ConsumerWidget {
   const MyApp({
@@ -80,13 +77,10 @@ class MyApp extends ConsumerWidget {
             switch (routeSettings.name) {
               case SettingsView.routeName:
                 return const SettingsView();
-              case TripDetailsView.routeName:
-                return const TripDetailsView();
               case EarningView.routeName:
                 return const EarningView();
               case ProfileView.routeName:
                 return const ProfileView();
-              case CompleteRideListView.routeName:
               default:
                 return FutureBuilder(
                     future: NotificationService().init(ref),

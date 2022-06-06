@@ -1,53 +1,27 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:driver_app/src/booking-request/trip_route.dart';
+import 'package:driver_app/src/profile/profile.dart';
 
 class BookedRide {
   late String bookedRideId;
-  late double distance;
-  late double price;
-  late LatLng origin;
-  late LatLng destination;
-  late String polyline;
   RideStatus? status;
-
-  late String startaddress;
-  late String endaddress;
-
-  late LatLng southwestbound;
-  late LatLng northeastbound;
+  late TripRoute polylineToOrigin;
+  late TripRoute? tripPolyline;
+  double? price;
+  late Profile passengerInfo;
   BookedRide({
     required this.bookedRideId,
-    required this.distance,
-    required this.price,
-    required this.origin,
-    required this.destination,
-    required this.polyline,
+    required this.polylineToOrigin,
     required this.status,
   });
   BookedRide.fromJson(json) {
     bookedRideId = json['bookedRideId'];
-    distance = double.parse(json['distance']);
-    price = double.parse(json['price']);
-    origin = LatLng(
-      double.parse(json['originlatitude']),
-      double.parse(json['originlongitude']),
-    );
-    destination = LatLng(
-      double.parse(json['destinationlatitude']),
-      double.parse(json['destinationlongitude']),
-    );
-    polyline = json['polyline'] ?? "";
-    status = RideStatus.values
-        .firstWhere((element) => element.toShortString() == json['rideStatus']);
-    southwestbound = LatLng(
-      double.parse(json['southwestboundlat']),
-      double.parse(json['southwestboundlng']),
-    );
-    northeastbound = LatLng(
-      double.parse(json['northeastboundlat']),
-      double.parse(json['northeastboundlng']),
-    );
-    startaddress = json["startAddress"];
-    endaddress = json["endAddress"];
+    polylineToOrigin = TripRoute.fromJson(json["polylineToOrigin"]);
+    if (json["polylineToOrigin"] != null)
+      tripPolyline = TripRoute.fromJson(json["polylineToOrigin"]);
+    status = RideStatus.values.firstWhere(
+        (element) => element.toShortString() == json['bookedRideStatus']);
+    price = double.tryParse(json["price"] ?? "");
+    passengerInfo = Profile.fromJson(json["passengerInfo"]);
   }
 }
 

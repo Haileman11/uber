@@ -10,7 +10,7 @@ class LocationService with ChangeNotifier {
   late LatLng myLocation;
 
   bool isStreaming = false;
-  Future<LatLng> getMyLocation() async {
+  Future<void> getMyLocation() async {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
     LocationPermission permission;
@@ -37,11 +37,8 @@ class LocationService with ChangeNotifier {
     }
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    notifyListeners();
-    print(position.latitude);
-    print(position.longitude);
     myLocation = LatLng(position.latitude, position.longitude);
-    return myLocation;
+    notifyListeners();
   }
 
   void startLocationStream() {

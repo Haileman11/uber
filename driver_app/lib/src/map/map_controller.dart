@@ -133,9 +133,9 @@ class MapController with ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleCircle() {
+  void toggleCircle(bool status) {
     var radius = 500.0;
-    circles.isNotEmpty
+    circles.isNotEmpty && status
         ? circles.clear()
         : circles.add(
             Circle(

@@ -1,18 +1,19 @@
 import 'package:common/settings/settings_view.dart';
 import 'package:flutter/material.dart';
-import 'sample_item.dart';
-import 'complete_ride_details_view.dart';
+import 'package:passenger_app/src/booking/booking.dart';
+
+import 'booking_details_view.dart';
 
 /// Displays a list of SampleItems.
 class CompleteRideListView extends StatelessWidget {
   const CompleteRideListView({
     Key? key,
-    this.items = const [SampleItem(1), SampleItem(2), SampleItem(3)],
+    this.items = const [],
   }) : super(key: key);
 
   static const routeName = '/booking-history';
 
-  final List<SampleItem> items;
+  final List<Booking> items;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +49,12 @@ class CompleteRideListView extends StatelessWidget {
           final item = items[index];
 
           return ListTile(
-              title: Text('SampleItem ${item.id}'),
+              title: Column(
+                children: [
+                  Text('From ${item.bookingRequest.route.startaddress}'),
+                  Text('To ${item.bookingRequest.route.endaddress}'),
+                ],
+              ),
               leading: const CircleAvatar(
                 // Display the Flutter Logo image asset.
                 foregroundImage: AssetImage('assets/images/flutter_logo.png'),
@@ -59,7 +65,7 @@ class CompleteRideListView extends StatelessWidget {
                 // background, the navigation stack is restored.
                 Navigator.restorablePushNamed(
                   context,
-                  CompleteRideDetailsView.routeName,
+                  BookingDetailsView.routeName,
                 );
               });
         },

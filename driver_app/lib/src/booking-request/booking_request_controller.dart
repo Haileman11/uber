@@ -1,24 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:common/dio_client.dart';
 import 'package:common/services/navigator_service.dart';
-import 'package:common/services/notification_service.dart';
-import 'package:driver_app/src/booked-ride/booked_ride.dart';
-import 'package:driver_app/src/booked-ride/ui/ongoing_ride_view.dart';
-import 'package:driver_app/src/booking-request/booking_request_view.dart';
-import 'package:driver_app/src/map/map_controller.dart';
+import 'package:driver_app/src/booking/booking.dart';
 import 'package:driver_app/src/map/map_service.dart';
+import 'package:driver_app/src/services/booking_data.dart';
 import 'package:driver_app/src/services/location_service.dart';
-import 'package:driver_app/src/booking-request/booking_request.dart';
-import 'package:driver_app/src/services/top_level_providers.dart';
+import 'package:driver_app/src/services/place_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tuple/tuple.dart';
 import 'booking_request_service.dart';
 
 class BookingRequestController with ChangeNotifier {
-  BookingRequest? bookingRequest;
-  BookedRide? bookedRide;
+  Booking? activeBooking;
 
   final BookingRequestService _bookingRequestService;
   LocationService locationService;
@@ -26,33 +21,35 @@ class BookingRequestController with ChangeNotifier {
   final NavigationService navigatorService;
   late GoogleMapController controller;
 
-  Set<Tuple2<String, LatLng>> destinations = {};
+  List<Place> destinations = [];
   List<Marker> markers = [];
   Map<PolylineId, Polyline> polylines = {};
 
   bool isLoading = false;
 
-  BookingRequestController(
-      ChangeNotifierProviderRef ref,
-      this._bookingRequestService,
-      Map? bookingRequestJson,
-      this.locationService,
-      this.navigatorService) {
-    if (bookingRequestJson != null) {
-      bookingRequest = BookingRequest.fromJson(bookingRequestJson);
-      destinations.add(Tuple2("destination", bookingRequest!.destination));
-      Polyline polyline =
-          MapService.decodePolyline(bookingRequest!.polyline, "polylineId");
+  ChangeNotifierProviderRef ref;
+
+  BookingRequestController(this._bookingRequestService, this.locationService,
+      this.navigatorService, this.activeBooking, this.ref) {
+    if (activeBooking != null && activeBooking!.bookedRide == null) {
+      destinations.add(Place(activeBooking!.bookingRequest.route.endaddress,
+          activeBooking!.bookingRequest.route.destination));
+      Polyline polyline = MapService.decodePolyline(
+          activeBooking!.bookingRequest.route.polyline,
+          activeBooking!.bookingRequest.route.polylineId);
       polylines[polyline.polylineId] = polyline;
     }
   }
 
-  Future<bool> acceptBookingRequest(bool acceptRequest) async {
+  Future<bool> acceptBookingRequest(
+      bool acceptRequest, LatLng driverLocation) async {
     try {
       var bookedRideJson = await _bookingRequestService.acceptBookingRequest(
-          bookingRequest!.bookingRequestId, acceptRequest);
-      bookedRide = BookedRide.fromJson(bookedRideJson);
-      notifyListeners();
+          activeBooking!.bookingRequest.bookingRequestId,
+          acceptRequest,
+          driverLocation);
+      Booking booking = Booking.fromJson(bookedRideJson);
+      ref.read(bookingDataProvider).setActiveBooking(booking);
       return true;
     } catch (e) {
       return false;
@@ -61,7 +58,7 @@ class BookingRequestController with ChangeNotifier {
 
   void addDestination(LatLng currentPosition) async {
     var destinationName = await MapService.getAddress(currentPosition);
-    destinations.add(Tuple2(destinationName, currentPosition));
+    destinations.add(Place(destinationName, currentPosition));
   }
 
   void clearDestinations() {
@@ -81,10 +78,9 @@ class BookingRequestController with ChangeNotifier {
 
 final bookingRequestProvider = ChangeNotifierProvider(((ref) {
   return BookingRequestController(
-    ref,
-    BookingRequestService(ref.read(dioClientProvider)),
-    ref.watch(bookingRequestJsonProvider),
-    ref.read(locationProvider),
-    ref.read(navigationProvider),
-  );
+      BookingRequestService(ref.read(dioClientProvider)),
+      ref.read(locationProvider),
+      ref.read(navigationProvider),
+      ref.read(bookingDataProvider).activeBooking,
+      ref);
 }));

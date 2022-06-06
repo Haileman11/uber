@@ -1,5 +1,6 @@
 import 'package:common/dio_client.dart';
 import 'package:dio/dio.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BookingRequestService {
   /// Persists the user's preferred ThemeMode to local or remote storage.
@@ -10,19 +11,27 @@ class BookingRequestService {
   Future<Map> acceptBookingRequest(
     String bookingId,
     bool acceptRequest,
+    LatLng driverLocation,
   ) async {
+    Response response;
     try {
-      Response response;
       response = await _dioClient.dio.post(acceptBookingUrl,
           data: {
             "requestAccepted": acceptRequest,
-            "bookingRequestId": bookingId
+            "bookingRequestId": bookingId,
+            "driverLocation": driverLocation.toCustomJson()
           },
           options: Options(headers: {'requiresToken': true}));
-      return response.data;
+      return response.data['booking'];
     } catch (e) {
       print(e);
       return {};
     }
+  }
+}
+
+extension ToJsonExtension on LatLng {
+  toCustomJson() {
+    return {"latitude": latitude, "longitude": longitude};
   }
 }
